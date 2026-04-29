@@ -1,0 +1,17 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
+Thumbs.db
+.env
+.env.local
+.env.*.local
+.vercel
+.idea/
+.vscode/
+*.tsbuildinfo

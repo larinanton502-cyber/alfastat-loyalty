@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "AlfaStat Loyalty",
+    "slug": "alfastat-loyalty",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#1565C0",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1565C0"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
