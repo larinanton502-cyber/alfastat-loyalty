@@ -240,6 +240,21 @@ export const AuthProvider = ({ children }) => {
     return persist(next);
   };
 
+  const changePassword = async ({ oldPassword, newPassword }) => {
+    if (!user) return;
+    if (user.password !== oldPassword) {
+      throw new Error('Текущий пароль введён неверно');
+    }
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('Новый пароль должен быть не короче 6 символов');
+    }
+    if (newPassword === oldPassword) {
+      throw new Error('Новый пароль не должен совпадать с текущим');
+    }
+    const next = { ...user, password: newPassword };
+    return persist(next);
+  };
+
   const claimDailyBonus = async () => {
     if (!user) return;
     if (isSameDay(user.lastBonusDate, Date.now())) {
@@ -366,6 +381,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateProfile,
+        changePassword,
         claimDailyBonus,
         buySubscription,
         addForumPost,

@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { storage } from '../storage/storage';
 import { colors } from '../constants/colors';
-import { WELCOME_BONUS, TRIAL_DURATION_DAYS } from '../constants/subscriptions';
+import { TRIAL_DURATION_DAYS } from '../constants/subscriptions';
 import PrimaryButton from '../components/PrimaryButton';
 
 const SLIDES = [
@@ -112,9 +112,7 @@ const SLIDES = [
   {
     title: 'Программа лояльности',
     subtitle: 'Начните прямо сейчас',
-    description: `Зарегистрируйтесь и получите ${WELCOME_BONUS.toLocaleString(
-      'ru-RU'
-    )} баллов на счёт и пробный период ${TRIAL_DURATION_DAYS} дней с доступом ко всем премиум-функциям.`,
+    description: `Зарегистрируйтесь и получите пробный период максимального тарифа на ${TRIAL_DURATION_DAYS} дней с доступом ко всем премиум-функциям.`,
     visual: 'cta',
   },
 ];
@@ -189,19 +187,17 @@ const Slide = ({ slide, width }) => {
 
         {visual === 'cta' && (
           <View style={styles.ctaCards}>
-            <View style={styles.ctaCard}>
-              <Text style={styles.ctaCardValue}>
-                {WELCOME_BONUS.toLocaleString('ru-RU')}
+            <View style={styles.ctaCardLarge}>
+              <Text style={styles.ctaCardValueLarge}>
+                {TRIAL_DURATION_DAYS} дней
               </Text>
-              <Text style={styles.ctaCardLabel}>Стартовый баланс</Text>
-            </View>
-            <View style={styles.ctaCard}>
-              <Text style={styles.ctaCardValue}>{TRIAL_DURATION_DAYS} дней</Text>
-              <Text style={styles.ctaCardLabel}>Премиум пробный период</Text>
-            </View>
-            <View style={styles.ctaCard}>
-              <Text style={styles.ctaCardValue}>До −20%</Text>
-              <Text style={styles.ctaCardLabel}>Скидка за длительность</Text>
+              <Text style={styles.ctaCardLabelLarge}>
+                Пробный период максимального тарифа
+              </Text>
+              <Text style={styles.ctaCardHint}>
+                После регистрации все премиум-функции открыты бесплатно. Можно
+                полноценно пользоваться платформой и решить, какой тариф подойдёт.
+              </Text>
             </View>
           </View>
         )}
@@ -419,24 +415,32 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 8,
   },
-  ctaCard: {
+  ctaCardLarge: {
     backgroundColor: colors.surface,
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 18,
+    padding: 26,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
     alignItems: 'center',
   },
-  ctaCardValue: {
-    fontSize: 26,
+  ctaCardValueLarge: {
+    fontSize: 42,
     fontWeight: '900',
     color: colors.primary,
   },
-  ctaCardLabel: {
-    fontSize: 13,
-    color: colors.textMuted,
+  ctaCardLabelLarge: {
+    fontSize: 16,
+    color: colors.text,
     marginTop: 4,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  ctaCardHint: {
+    fontSize: 14,
+    color: colors.textMuted,
+    marginTop: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   dots: {
     flexDirection: 'row',

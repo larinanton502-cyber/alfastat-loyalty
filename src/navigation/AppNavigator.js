@@ -18,6 +18,7 @@ import SubscriptionDetailsScreen from '../screens/SubscriptionDetailsScreen';
 import ForumScreen from '../screens/ForumScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import SupportChatScreen from '../screens/SupportChatScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -173,6 +174,11 @@ const AppNavigator = () => {
               name="SubscriptionDetails"
               component={SubscriptionDetailsScreen}
               options={{ title: 'Тариф' }}
+            />
+            <Stack.Screen
+              name="SupportChat"
+              component={SupportChatScreen}
+              options={{ title: 'Чат с поддержкой' }}
             />
           </>
         )}

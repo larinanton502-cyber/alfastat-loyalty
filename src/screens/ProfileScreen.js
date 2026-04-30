@@ -38,11 +38,18 @@ const InfoRow = ({ label, value }) => (
   </View>
 );
 
-const ProfileScreen = () => {
-  const { user, logout, updateProfile, isPremiumActive } = useAuth();
+const ProfileScreen = ({ navigation }) => {
+  const { user, logout, updateProfile, changePassword, isPremiumActive } = useAuth();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '' });
   const [saving, setSaving] = useState(false);
+  const [passwordModal, setPasswordModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   if (!user) return null;
   const subscription = getSubscriptionById(user.currentSubscription);
@@ -82,6 +89,35 @@ const ProfileScreen = () => {
       destructive: true,
       onConfirm: logout,
     });
+  };
+
+  const openPasswordModal = () => {
+    setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordModal(true);
+  };
+
+  const submitPasswordChange = async () => {
+    if (!passwordForm.oldPassword || !passwordForm.newPassword) {
+      notify({ title: 'Ошибка', message: 'Заполните все поля' });
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      notify({ title: 'Ошибка', message: 'Пароли не совпадают' });
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await changePassword({
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      setPasswordModal(false);
+      notify({ title: 'Готово', message: 'Пароль успешно изменён' });
+    } catch (e) {
+      notify({ title: 'Ошибка', message: e.message });
+    } finally {
+      setChangingPassword(false);
+    }
   };
 
   const copyReferral = () => {
@@ -302,11 +338,49 @@ const ProfileScreen = () => {
           />
         </View>
 
+        <View style={styles.menuCard}>
+          <TouchableOpacity
+            style={styles.menuRow}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('SupportChat')}
+          >
+            <View style={styles.menuIconWrap}>
+              <Text style={styles.menuIcon}>?</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.menuTitle}>Чат с поддержкой</Text>
+              <Text style={styles.menuSubtitle}>
+                Решение проблем и ответы на вопросы
+              </Text>
+            </View>
+            <Text style={styles.menuArrow}>›</Text>
+          </TouchableOpacity>
+
+          <View style={styles.menuDivider} />
+
+          <TouchableOpacity
+            style={styles.menuRow}
+            activeOpacity={0.7}
+            onPress={openPasswordModal}
+          >
+            <View style={styles.menuIconWrap}>
+              <Text style={styles.menuIcon}>⚿</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.menuTitle}>Сменить пароль</Text>
+              <Text style={styles.menuSubtitle}>
+                Безопасность аккаунта
+              </Text>
+            </View>
+            <Text style={styles.menuArrow}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         <PrimaryButton
           title="Выйти из аккаунта"
           onPress={confirmLogout}
           variant="outline"
-          style={{ marginTop: 8 }}
+          style={{ marginTop: 14 }}
         />
       </ScrollView>
 
@@ -345,6 +419,64 @@ const ProfileScreen = () => {
                 title="Сохранить"
                 onPress={saveEdit}
                 loading={saving}
+                style={{ flex: 1 }}
+              />
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <Modal visible={passwordModal} transparent animationType="slide">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalRoot}
+        >
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setPasswordModal(false)}
+          />
+          <View style={styles.modalSheet}>
+            <Text style={styles.modalTitle}>Смена пароля</Text>
+            <TextField
+              label="Текущий пароль"
+              value={passwordForm.oldPassword}
+              onChangeText={(v) =>
+                setPasswordForm((p) => ({ ...p, oldPassword: v }))
+              }
+              secureTextEntry
+              placeholder="Введите текущий пароль"
+            />
+            <TextField
+              label="Новый пароль"
+              value={passwordForm.newPassword}
+              onChangeText={(v) =>
+                setPasswordForm((p) => ({ ...p, newPassword: v }))
+              }
+              secureTextEntry
+              placeholder="Не менее 6 символов"
+            />
+            <TextField
+              label="Подтверждение нового пароля"
+              value={passwordForm.confirmPassword}
+              onChangeText={(v) =>
+                setPasswordForm((p) => ({ ...p, confirmPassword: v }))
+              }
+              secureTextEntry
+              placeholder="Повторите новый пароль"
+            />
+            <View style={styles.modalActions}>
+              <PrimaryButton
+                title="Отмена"
+                variant="ghost"
+                onPress={() => setPasswordModal(false)}
+                style={{ flex: 1 }}
+              />
+              <View style={{ width: 10 }} />
+              <PrimaryButton
+                title="Сменить"
+                onPress={submitPasswordChange}
+                loading={changingPassword}
                 style={{ flex: 1 }}
               />
             </View>
@@ -652,6 +784,54 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 13,
     fontWeight: '700',
+  },
+  menuCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+  },
+  menuIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  menuIcon: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: colors.primary,
+  },
+  menuTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  menuSubtitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  menuArrow: {
+    color: colors.textMuted,
+    fontSize: 28,
+    fontWeight: '600',
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginLeft: 64,
   },
   modalRoot: {
     flex: 1,

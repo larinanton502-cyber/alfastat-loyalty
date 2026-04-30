@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
-import { WELCOME_BONUS } from '../constants/subscriptions';
 import PrimaryButton from '../components/PrimaryButton';
 import TextField from '../components/TextField';
 import { notify } from '../utils/dialog';
@@ -78,11 +77,11 @@ const RegisterScreen = ({ navigation }) => {
           <View style={styles.inner}>
             <Text style={styles.title}>Создание аккаунта</Text>
             <Text style={styles.subtitle}>
-              После регистрации вы получите{' '}
+              После регистрации вы получите{'\n'}
               <Text style={styles.bonus}>
-                {WELCOME_BONUS.toLocaleString('ru-RU')} баллов на счёт
-              </Text>{' '}
-              и пробный период 14 дней
+                пробный период максимального тарифа{'\n'}на 14 дней
+              </Text>
+              {'\n'}с использованием всех возможностей платформы
             </Text>
 
             <View style={styles.form}>
@@ -180,15 +179,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
-    color: colors.textMuted,
-    marginTop: 6,
-    marginBottom: 24,
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginTop: 12,
+    marginBottom: 28,
     textAlign: 'center',
+    lineHeight: 24,
   },
   bonus: {
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: '800',
+    fontSize: 18,
   },
   form: {
     marginTop: 4,

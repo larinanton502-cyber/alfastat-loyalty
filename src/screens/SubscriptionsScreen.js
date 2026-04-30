@@ -25,6 +25,21 @@ const SubscriptionsScreen = ({ navigation }) => {
           Выберите подходящий тариф. Оплатите баллами и получите кэшбэк.
         </Text>
 
+        <View style={styles.discountBanner}>
+          <View style={styles.discountIcon}>
+            <Text style={styles.discountIconText}>%</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.discountTitle}>
+              Скидка при оплате вперёд
+            </Text>
+            <Text style={styles.discountSubtitle}>
+              −10% при оплате на 6 месяцев · −20% при оплате на 12 месяцев.
+              Длительность выбирается на странице тарифа.
+            </Text>
+          </View>
+        </View>
+
         {SUBSCRIPTIONS.map((sub) => (
           <SubscriptionCard
             key={sub.id}
@@ -82,6 +97,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     marginBottom: 18,
+  },
+  discountBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.successLight,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: colors.success,
+  },
+  discountIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.success,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  discountIconText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  discountTitle: {
+    color: colors.success,
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  discountSubtitle: {
+    color: colors.text,
+    fontSize: 12,
+    marginTop: 3,
+    lineHeight: 17,
   },
 });
 
