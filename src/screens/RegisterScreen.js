@@ -115,6 +115,7 @@ const RegisterScreen = ({ navigation }) => {
               onChangeText={(v) => setField('password', v)}
               placeholder="Не менее 6 символов"
               secureTextEntry
+              secureToggle
               error={errors.password}
             />
             <TextField
@@ -123,6 +124,7 @@ const RegisterScreen = ({ navigation }) => {
               onChangeText={(v) => setField('confirm', v)}
               placeholder="Повторите пароль"
               secureTextEntry
+              secureToggle
               error={errors.confirm}
             />
             <TextField

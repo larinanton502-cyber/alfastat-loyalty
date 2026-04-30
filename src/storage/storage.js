@@ -7,11 +7,46 @@ const KEYS = {
   FORUM_POSTS: '@alfastat:forumPosts',
 };
 
+const generateReferralCode = (id, name) => {
+  const cleanName = (name || 'USER')
+    .toUpperCase()
+    .replace(/[^A-ZА-Я]/g, '')
+    .slice(0, 4) || 'USER';
+  const tail = String(id).slice(-4);
+  return `${cleanName}${tail}`;
+};
+
+const migrateUser = (user) => {
+  if (!user) return user;
+  const out = { ...user };
+  if (!out.referralCode) {
+    out.referralCode = generateReferralCode(out.id, out.name);
+  }
+  if (!Array.isArray(out.referrals)) out.referrals = [];
+  if (!out.achievements || typeof out.achievements !== 'object') {
+    out.achievements = {};
+  }
+  if (typeof out.forumPostsCount !== 'number') out.forumPostsCount = 0;
+  if (typeof out.isTrialActive !== 'boolean') out.isTrialActive = false;
+  if (!Array.isArray(out.history)) out.history = [];
+  if (typeof out.balance !== 'number') out.balance = 0;
+  if (!out.currentSubscription) out.currentSubscription = 'free';
+  return out;
+};
+
 export const storage = {
   async getUsers() {
     try {
       const data = await AsyncStorage.getItem(KEYS.USERS);
-      return data ? JSON.parse(data) : [];
+      const list = data ? JSON.parse(data) : [];
+      const migrated = list.map(migrateUser);
+      const changed = migrated.some(
+        (u, i) => JSON.stringify(u) !== JSON.stringify(list[i])
+      );
+      if (changed) {
+        await AsyncStorage.setItem(KEYS.USERS, JSON.stringify(migrated));
+      }
+      return migrated;
     } catch (e) {
       return [];
     }

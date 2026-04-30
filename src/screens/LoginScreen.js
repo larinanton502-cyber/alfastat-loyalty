@@ -79,6 +79,7 @@ const LoginScreen = ({ navigation }) => {
               onChangeText={setPassword}
               placeholder="Введите пароль"
               secureTextEntry
+              secureToggle
               error={errors.password}
             />
 

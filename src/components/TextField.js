@@ -1,18 +1,55 @@
-import React from 'react';
-import { View, TextInput, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { colors } from '../constants/colors';
 
-const TextField = ({ label, error, style, ...props }) => (
-  <View style={[styles.wrapper, style]}>
-    {label ? <Text style={styles.label}>{label}</Text> : null}
-    <TextInput
-      placeholderTextColor={colors.textMuted}
-      style={[styles.input, error && styles.inputError]}
-      {...props}
-    />
-    {error ? <Text style={styles.errorText}>{error}</Text> : null}
-  </View>
-);
+const TextField = ({
+  label,
+  error,
+  style,
+  secureToggle = false,
+  secureTextEntry = false,
+  ...props
+}) => {
+  const [hidden, setHidden] = useState(true);
+  const isSecure = secureTextEntry && (secureToggle ? hidden : true);
+  const showToggle = secureToggle && secureTextEntry;
+
+  return (
+    <View style={[styles.wrapper, style]}>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
+      <View style={styles.inputWrap}>
+        <TextInput
+          placeholderTextColor={colors.textMuted}
+          style={[
+            styles.input,
+            error && styles.inputError,
+            showToggle && styles.inputWithToggle,
+          ]}
+          secureTextEntry={isSecure}
+          {...props}
+        />
+        {showToggle && (
+          <TouchableOpacity
+            style={styles.toggleButton}
+            onPress={() => setHidden((h) => !h)}
+            activeOpacity={0.6}
+          >
+            <Text style={styles.toggleText}>
+              {hidden ? 'Показать' : 'Скрыть'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -24,6 +61,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     fontWeight: '600',
   },
+  inputWrap: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
   input: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -34,8 +75,24 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 15,
   },
+  inputWithToggle: {
+    paddingRight: 90,
+  },
   inputError: {
     borderColor: colors.error,
+  },
+  toggleButton: {
+    position: 'absolute',
+    right: 6,
+    top: 0,
+    bottom: 0,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+  },
+  toggleText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
   },
   errorText: {
     color: colors.error,

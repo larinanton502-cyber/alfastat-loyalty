@@ -445,6 +445,7 @@ const ProfileScreen = ({ navigation }) => {
                 setPasswordForm((p) => ({ ...p, oldPassword: v }))
               }
               secureTextEntry
+              secureToggle
               placeholder="Введите текущий пароль"
             />
             <TextField
@@ -454,6 +455,7 @@ const ProfileScreen = ({ navigation }) => {
                 setPasswordForm((p) => ({ ...p, newPassword: v }))
               }
               secureTextEntry
+              secureToggle
               placeholder="Не менее 6 символов"
             />
             <TextField
@@ -463,6 +465,7 @@ const ProfileScreen = ({ navigation }) => {
                 setPasswordForm((p) => ({ ...p, confirmPassword: v }))
               }
               secureTextEntry
+              secureToggle
               placeholder="Повторите новый пароль"
             />
             <View style={styles.modalActions}>
