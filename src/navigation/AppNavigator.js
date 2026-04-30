@@ -1,18 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { useAuth } from '../context/AuthContext';
+import { storage } from '../storage/storage';
 import { colors } from '../constants/colors';
 
 import SplashScreen from '../screens/SplashScreen';
+import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
 import SubscriptionsScreen from '../screens/SubscriptionsScreen';
 import SubscriptionDetailsScreen from '../screens/SubscriptionDetailsScreen';
+import ForumScreen from '../screens/ForumScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 
@@ -42,7 +45,7 @@ const MainTabs = () => (
       },
       tabBarActiveTintColor: colors.primary,
       tabBarInactiveTintColor: colors.textMuted,
-      tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+      tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
     }}
   >
     <Tab.Screen
@@ -61,6 +64,16 @@ const MainTabs = () => (
         title: 'Тарифы',
         tabBarLabel: 'Тарифы',
         tabBarIcon: ({ focused }) => <TabIcon label="★" focused={focused} />,
+      }}
+    />
+    <Tab.Screen
+      name="Forum"
+      component={ForumScreen}
+      options={{
+        title: 'Сообщество',
+        tabBarLabel: 'Сообщество',
+        tabBarIcon: ({ focused }) => <TabIcon label="✎" focused={focused} />,
+        headerShown: false,
       }}
     />
     <Tab.Screen
@@ -86,8 +99,16 @@ const MainTabs = () => (
 
 const AppNavigator = () => {
   const { user, loading } = useAuth();
+  const [onboardingSeen, setOnboardingSeen] = useState(null);
 
-  if (loading) {
+  useEffect(() => {
+    (async () => {
+      const seen = await storage.getOnboardingSeen();
+      setOnboardingSeen(seen);
+    })();
+  }, []);
+
+  if (loading || onboardingSeen === null) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -104,23 +125,43 @@ const AppNavigator = () => {
         }}
       >
         {!user ? (
-          <>
-            <Stack.Screen
-              name="Splash"
-              component={SplashScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-              options={{ headerShown: false }}
-            />
-          </>
+          !onboardingSeen ? (
+            <>
+              <Stack.Screen
+                name="Onboarding"
+                component={OnboardingScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Register"
+                component={RegisterScreen}
+                options={{ headerShown: false }}
+              />
+            </>
+          ) : (
+            <>
+              <Stack.Screen
+                name="Splash"
+                component={SplashScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Register"
+                component={RegisterScreen}
+                options={{ headerShown: false }}
+              />
+            </>
+          )
         ) : (
           <>
             <Stack.Screen

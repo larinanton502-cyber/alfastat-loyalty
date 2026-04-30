@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEYS = {
   USERS: '@alfastat:users',
   CURRENT_USER_ID: '@alfastat:currentUserId',
+  ONBOARDING_SEEN: '@alfastat:onboardingSeen',
+  FORUM_POSTS: '@alfastat:forumPosts',
 };
 
 export const storage = {
@@ -50,7 +52,34 @@ export const storage = {
     return user;
   },
 
+  async getOnboardingSeen() {
+    const v = await AsyncStorage.getItem(KEYS.ONBOARDING_SEEN);
+    return v === '1';
+  },
+
+  async setOnboardingSeen() {
+    await AsyncStorage.setItem(KEYS.ONBOARDING_SEEN, '1');
+  },
+
+  async getForumPosts() {
+    try {
+      const data = await AsyncStorage.getItem(KEYS.FORUM_POSTS);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  async saveForumPosts(posts) {
+    await AsyncStorage.setItem(KEYS.FORUM_POSTS, JSON.stringify(posts));
+  },
+
   async clearAll() {
-    await AsyncStorage.multiRemove([KEYS.USERS, KEYS.CURRENT_USER_ID]);
+    await AsyncStorage.multiRemove([
+      KEYS.USERS,
+      KEYS.CURRENT_USER_ID,
+      KEYS.ONBOARDING_SEEN,
+      KEYS.FORUM_POSTS,
+    ]);
   },
 };

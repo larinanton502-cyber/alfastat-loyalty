@@ -24,6 +24,7 @@ const RegisterScreen = ({ navigation }) => {
     phone: '',
     password: '',
     confirm: '',
+    referralCode: '',
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -55,6 +56,7 @@ const RegisterScreen = ({ navigation }) => {
         email: form.email,
         phone: form.phone,
         password: form.password,
+        referralCode: form.referralCode,
       });
     } catch (err) {
       notify({ title: 'Ошибка регистрации', message: err.message });
@@ -77,7 +79,10 @@ const RegisterScreen = ({ navigation }) => {
             <Text style={styles.title}>Создание аккаунта</Text>
             <Text style={styles.subtitle}>
               После регистрации вы получите{' '}
-              <Text style={styles.bonus}>{WELCOME_BONUS} бонусных баллов</Text>
+              <Text style={styles.bonus}>
+                {WELCOME_BONUS.toLocaleString('ru-RU')} баллов на счёт
+              </Text>{' '}
+              и пробный период 14 дней
             </Text>
 
             <View style={styles.form}>
@@ -120,6 +125,14 @@ const RegisterScreen = ({ navigation }) => {
               placeholder="Повторите пароль"
               secureTextEntry
               error={errors.confirm}
+            />
+            <TextField
+              label="Промокод (необязательно)"
+              value={form.referralCode}
+              onChangeText={(v) => setField('referralCode', v)}
+              placeholder="Введите код друга"
+              autoCapitalize="characters"
+              error={errors.referralCode}
             />
 
             <PrimaryButton

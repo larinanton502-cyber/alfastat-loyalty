@@ -79,6 +79,7 @@ export const SUBSCRIPTIONS = [
       'Доп. пакет ключей: от 100 (1 ₽/ключ)',
     ],
     cashbackPercent: 12,
+    isPremium: true,
   },
   {
     id: 'corporate',
@@ -99,6 +100,7 @@ export const SUBSCRIPTIONS = [
       'Доп. пакет ключей: от 100 (1 ₽/ключ)',
     ],
     cashbackPercent: 15,
+    isPremium: true,
   },
   {
     id: 'individual',
@@ -123,9 +125,74 @@ export const SUBSCRIPTIONS = [
   },
 ];
 
-export const WELCOME_BONUS = 1500;
+export const WELCOME_BONUS = 30000;
 export const DAILY_BONUS = 100;
-export const SUBSCRIPTION_DURATION_DAYS = 30;
+
+export const SUBSCRIPTION_DURATIONS = [
+  { months: 1, discount: 0, label: '1 месяц' },
+  { months: 3, discount: 5, label: '3 месяца', badgeText: 'выгоднее на 5%' },
+  { months: 6, discount: 10, label: '6 месяцев', badgeText: 'выгоднее на 10%' },
+  { months: 12, discount: 20, label: '12 месяцев', badgeText: 'выгоднее на 20%' },
+];
+
+export const TRIAL_DURATION_DAYS = 14;
+export const TRIAL_SUBSCRIPTION_ID = 'advanced';
+
+export const REFERRAL_BONUS_REFERRER = 2000;
+export const REFERRAL_BONUS_REFERRED = 1000;
+
+export const ACHIEVEMENTS = [
+  {
+    id: 'first_purchase',
+    title: 'Первая покупка',
+    description: 'Купите свою первую подписку',
+    glyph: '★',
+    reward: 500,
+  },
+  {
+    id: 'big_spender',
+    title: 'Большие траты',
+    description: 'Потратьте суммарно 5 000 баллов',
+    glyph: '◆',
+    reward: 1000,
+  },
+  {
+    id: 'loyal_user',
+    title: 'Постоянный клиент',
+    description: 'Получите 7 ежедневных бонусов',
+    glyph: '✦',
+    reward: 700,
+  },
+  {
+    id: 'referrer',
+    title: 'Друг привёл друга',
+    description: 'Пригласите первого пользователя',
+    glyph: '♥',
+    reward: 1500,
+  },
+  {
+    id: 'subscription_master',
+    title: 'Мастер подписок',
+    description: 'Купите 3 разные подписки',
+    glyph: '♛',
+    reward: 2000,
+  },
+  {
+    id: 'community',
+    title: 'В сообществе',
+    description: 'Опубликуйте первое сообщение в форуме',
+    glyph: '✎',
+    reward: 300,
+  },
+];
+
+export const TELEGRAM_INVITE_URL = 'https://t.me/+alfastat_premium_demo';
 
 export const getSubscriptionById = (id) =>
   SUBSCRIPTIONS.find((s) => s.id === id) || SUBSCRIPTIONS[0];
+
+export const calculateDurationPrice = (basePrice, months, discountPercent) => {
+  const total = basePrice * months;
+  const discounted = Math.round(total * (1 - discountPercent / 100));
+  return { total, discounted, savings: total - discounted };
+};

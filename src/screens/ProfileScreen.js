@@ -8,11 +8,18 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
-import { getSubscriptionById } from '../constants/subscriptions';
+import {
+  getSubscriptionById,
+  ACHIEVEMENTS,
+  TELEGRAM_INVITE_URL,
+  REFERRAL_BONUS_REFERRER,
+  REFERRAL_BONUS_REFERRED,
+} from '../constants/subscriptions';
 import PrimaryButton from '../components/PrimaryButton';
 import TextField from '../components/TextField';
 import { confirm, notify } from '../utils/dialog';
@@ -32,7 +39,7 @@ const InfoRow = ({ label, value }) => (
 );
 
 const ProfileScreen = () => {
-  const { user, logout, updateProfile } = useAuth();
+  const { user, logout, updateProfile, isPremiumActive } = useAuth();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '' });
   const [saving, setSaving] = useState(false);
@@ -42,7 +49,11 @@ const ProfileScreen = () => {
 
   const purchases = user.history.filter((h) => h.type === 'purchase');
   const purchasesCount = purchases.length;
-  const totalRubSpent = purchases.reduce((sum, h) => sum + h.pointsSpent, 0);
+  const totalSpent = purchases.reduce((sum, h) => sum + h.pointsSpent, 0);
+  const referrals = user.referrals || [];
+  const unlockedAchievements = ACHIEVEMENTS.filter(
+    (a) => user.achievements && user.achievements[a.id]
+  );
 
   const openEdit = () => {
     setForm({ name: user.name, phone: user.phone });
@@ -73,6 +84,40 @@ const ProfileScreen = () => {
     });
   };
 
+  const copyReferral = () => {
+    const code = user.referralCode;
+    if (Platform.OS === 'web' && navigator?.clipboard) {
+      navigator.clipboard.writeText(code).then(() => {
+        notify({
+          title: 'Код скопирован',
+          message: `Промокод ${code} скопирован в буфер обмена`,
+        });
+      });
+    } else {
+      notify({
+        title: 'Ваш промокод',
+        message: code,
+      });
+    }
+  };
+
+  const openTelegram = () => {
+    if (!isPremiumActive) {
+      notify({
+        title: 'Доступ только для премиум',
+        message: 'Telegram-канал доступен пользователям тарифов «Продвинутый» и «Корпоративный»',
+      });
+      return;
+    }
+    if (Platform.OS === 'web') {
+      window.open(TELEGRAM_INVITE_URL, '_blank');
+    } else {
+      Linking.openURL(TELEGRAM_INVITE_URL).catch(() => {
+        notify({ title: 'Ошибка', message: 'Не удалось открыть ссылку' });
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -98,16 +143,19 @@ const ProfileScreen = () => {
             <Text style={styles.statLabel}>Покупок</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>
-              {totalRubSpent.toLocaleString('ru-RU')}
-            </Text>
-            <Text style={styles.statLabel}>Потрачено</Text>
+            <Text style={styles.statValue}>{referrals.length}</Text>
+            <Text style={styles.statLabel}>Друзей</Text>
           </View>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Текущий тариф</Text>
           <Text style={styles.subscriptionName}>{subscription.name}</Text>
+          {user.isTrialActive && (
+            <View style={styles.trialBadge}>
+              <Text style={styles.trialBadgeText}>ПРОБНЫЙ ПЕРИОД</Text>
+            </View>
+          )}
           {user.subscriptionExpiry && (
             <Text style={styles.subscriptionExpiry}>
               Действует до {formatDate(user.subscriptionExpiry)}
@@ -117,6 +165,122 @@ const ProfileScreen = () => {
             {subscription.description}
           </Text>
         </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Реферальная программа</Text>
+          <Text style={styles.cardSubtitle}>
+            Поделитесь промокодом — друг получит {REFERRAL_BONUS_REFERRED} баллов,
+            вы получите {REFERRAL_BONUS_REFERRER} баллов.
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={copyReferral}
+            style={styles.referralCode}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.referralLabel}>Ваш промокод</Text>
+              <Text style={styles.referralValue}>{user.referralCode}</Text>
+            </View>
+            <Text style={styles.copyIcon}>⧉</Text>
+          </TouchableOpacity>
+          {referrals.length > 0 && (
+            <View style={styles.referralsList}>
+              <Text style={styles.referralsTitle}>
+                Привлечено: {referrals.length}
+              </Text>
+              {referrals.slice(0, 3).map((r) => (
+                <Text key={r.id} style={styles.referralItem}>
+                  • {r.name} · {formatDate(r.date)}
+                </Text>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Достижения</Text>
+            <Text style={styles.achievementsCount}>
+              {unlockedAchievements.length} / {ACHIEVEMENTS.length}
+            </Text>
+          </View>
+          <View style={styles.achievementsList}>
+            {ACHIEVEMENTS.map((a) => {
+              const unlocked =
+                user.achievements && user.achievements[a.id];
+              return (
+                <View
+                  key={a.id}
+                  style={[
+                    styles.achievement,
+                    !unlocked && styles.achievementLocked,
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.achievementGlyph,
+                      unlocked && styles.achievementGlyphActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.achievementGlyphText,
+                        unlocked && styles.achievementGlyphTextActive,
+                      ]}
+                    >
+                      {a.glyph}
+                    </Text>
+                  </View>
+                  <View style={styles.achievementInfo}>
+                    <Text
+                      style={[
+                        styles.achievementTitle,
+                        !unlocked && styles.achievementTitleLocked,
+                      ]}
+                    >
+                      {a.title}
+                    </Text>
+                    <Text style={styles.achievementDescription}>
+                      {a.description}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.achievementReward,
+                      !unlocked && styles.achievementRewardLocked,
+                    ]}
+                  >
+                    +{a.reward}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={openTelegram}
+          style={[
+            styles.telegramCard,
+            !isPremiumActive && styles.telegramCardLocked,
+          ]}
+        >
+          <View style={styles.telegramIcon}>
+            <Text style={styles.telegramIconText}>✈</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.telegramTitle}>
+              Закрытый Telegram-канал
+            </Text>
+            <Text style={styles.telegramSubtitle}>
+              {isPremiumActive
+                ? 'Эксклюзивные советы и анонсы новых функций'
+                : 'Доступно для тарифов «Продвинутый» и «Корпоративный»'}
+            </Text>
+          </View>
+          <Text style={styles.telegramArrow}>›</Text>
+        </TouchableOpacity>
 
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -131,6 +295,10 @@ const ProfileScreen = () => {
           <InfoRow
             label="Дата регистрации"
             value={formatDate(user.registeredAt)}
+          />
+          <InfoRow
+            label="Всего потрачено"
+            value={`${totalSpent.toLocaleString('ru-RU')} баллов`}
           />
         </View>
 
@@ -273,15 +441,35 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 8,
   },
+  cardSubtitle: {
+    fontSize: 13,
+    color: colors.textMuted,
+    marginBottom: 12,
+    lineHeight: 18,
+  },
   subscriptionName: {
     fontSize: 22,
     fontWeight: '800',
     color: colors.primary,
   },
+  trialBadge: {
+    backgroundColor: colors.warning,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginTop: 4,
+  },
+  trialBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
   subscriptionExpiry: {
     fontSize: 13,
     color: colors.textSecondary,
-    marginTop: 2,
+    marginTop: 6,
     fontWeight: '600',
   },
   subscriptionDescription: {
@@ -289,6 +477,160 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 8,
     lineHeight: 18,
+  },
+  referralCode: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderColor: colors.primary,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  referralLabel: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  referralValue: {
+    color: colors.primary,
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginTop: 2,
+  },
+  copyIcon: {
+    fontSize: 24,
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  referralsList: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  referralsTitle: {
+    color: colors.text,
+    fontWeight: '700',
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  referralItem: {
+    color: colors.textMuted,
+    fontSize: 12,
+    marginVertical: 1,
+  },
+  achievementsCount: {
+    color: colors.primary,
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  achievementsList: {
+    marginTop: 4,
+  },
+  achievement: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  achievementLocked: {
+    opacity: 0.5,
+  },
+  achievementGlyph: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.background,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  achievementGlyphActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  achievementGlyphText: {
+    fontSize: 18,
+    color: colors.textMuted,
+    fontWeight: '900',
+  },
+  achievementGlyphTextActive: {
+    color: colors.textOnPrimary,
+  },
+  achievementInfo: {
+    flex: 1,
+  },
+  achievementTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  achievementTitleLocked: {
+    color: colors.textMuted,
+  },
+  achievementDescription: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  achievementReward: {
+    color: colors.success,
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  achievementRewardLocked: {
+    color: colors.textMuted,
+  },
+  telegramCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#229ED9',
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 14,
+  },
+  telegramCardLocked: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  telegramIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  telegramIconText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  telegramTitle: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  telegramSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  telegramArrow: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: '700',
   },
   row: {
     flexDirection: 'row',

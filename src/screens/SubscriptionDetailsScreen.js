@@ -4,18 +4,25 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
-import { getSubscriptionById } from '../constants/subscriptions';
+import {
+  getSubscriptionById,
+  SUBSCRIPTION_DURATIONS,
+  calculateDurationPrice,
+} from '../constants/subscriptions';
 import PrimaryButton from '../components/PrimaryButton';
 import { confirm, notify } from '../utils/dialog';
 
-const Row = ({ label, value }) => (
+const Row = ({ label, value, accent }) => (
   <View style={styles.row}>
     <Text style={styles.rowLabel}>{label}</Text>
-    <Text style={styles.rowValue}>{value}</Text>
+    <Text style={[styles.rowValue, accent && { color: colors.success }]}>
+      {value}
+    </Text>
   </View>
 );
 
@@ -23,26 +30,37 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
   const { subscriptionId } = route.params;
   const { user, buySubscription } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [duration, setDuration] = useState(SUBSCRIPTION_DURATIONS[0]);
 
   const sub = getSubscriptionById(subscriptionId);
   const isActive = user?.currentSubscription === sub.id;
-  const canBuy = !isActive && !sub.isCustom && sub.pointsPrice > 0;
-  const cashback = sub.pointsPrice
-    ? Math.round((sub.pointsPrice * sub.cashbackPercent) / 100)
+  const canBuy = !sub.isCustom && sub.pointsPrice > 0;
+
+  const { total, discounted, savings } =
+    sub.pointsPrice && canBuy
+      ? calculateDurationPrice(sub.pointsPrice, duration.months, duration.discount)
+      : { total: 0, discounted: 0, savings: 0 };
+
+  const cashback = canBuy
+    ? Math.round((discounted * sub.cashbackPercent) / 100)
     : 0;
 
   const handleBuy = () => {
     confirm({
       title: 'Подтверждение покупки',
-      message: `Тариф «${sub.name}»\nСписать: ${sub.pointsPrice.toLocaleString('ru-RU')} баллов\nКэшбэк: ${cashback} баллов (${sub.cashbackPercent}%)`,
+      message: `Тариф «${sub.name}» на ${duration.label}\nСписать: ${discounted.toLocaleString(
+        'ru-RU'
+      )} баллов${
+        savings > 0 ? `\nСкидка: ${savings.toLocaleString('ru-RU')}` : ''
+      }\nКэшбэк: ${cashback} баллов (${sub.cashbackPercent}%)`,
       confirmText: 'Купить',
       onConfirm: async () => {
         setLoading(true);
         try {
-          await buySubscription(sub.id);
+          await buySubscription(sub.id, duration.months, duration.discount);
           notify({
             title: 'Покупка успешна',
-            message: `Тариф «${sub.name}» активирован.\nНачислено ${cashback} баллов кэшбэка.`,
+            message: `Тариф «${sub.name}» активирован на ${duration.label}.\nНачислено ${cashback} баллов кэшбэка.`,
             onClose: () => navigation.goBack(),
           });
         } catch (e) {
@@ -69,13 +87,76 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
             </Text>
             {sub.pointsPrice > 0 && (
               <Text style={styles.points}>
-                {sub.pointsPrice.toLocaleString('ru-RU')} баллов
+                {sub.pointsPrice.toLocaleString('ru-RU')} баллов / мес.
               </Text>
             )}
           </View>
         )}
 
         <Text style={styles.description}>{sub.description}</Text>
+
+        {canBuy && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Выберите длительность</Text>
+            <Text style={styles.cardSubtitle}>
+              При оплате на 6–12 месяцев — скидка до 20%
+            </Text>
+            <View style={styles.durationsList}>
+              {SUBSCRIPTION_DURATIONS.map((d) => {
+                const isSelected = d.months === duration.months;
+                return (
+                  <TouchableOpacity
+                    key={d.months}
+                    activeOpacity={0.85}
+                    onPress={() => setDuration(d)}
+                    style={[
+                      styles.durationOption,
+                      isSelected && styles.durationOptionActive,
+                    ]}
+                  >
+                    <View style={styles.durationLeft}>
+                      <View
+                        style={[
+                          styles.radio,
+                          isSelected && styles.radioActive,
+                        ]}
+                      >
+                        {isSelected && <View style={styles.radioDot} />}
+                      </View>
+                      <View>
+                        <Text
+                          style={[
+                            styles.durationLabel,
+                            isSelected && styles.durationLabelActive,
+                          ]}
+                        >
+                          {d.label}
+                        </Text>
+                        {d.badgeText && (
+                          <Text style={styles.durationBadge}>
+                            {d.badgeText}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                    <Text
+                      style={[
+                        styles.durationPrice,
+                        isSelected && styles.durationPriceActive,
+                      ]}
+                    >
+                      {calculateDurationPrice(
+                        sub.pointsPrice,
+                        d.months,
+                        d.discount
+                      ).discounted.toLocaleString('ru-RU')}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Условия тарифа</Text>
@@ -95,19 +176,31 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
               value={`${user.balance.toLocaleString('ru-RU')} баллов`}
             />
             <Row
-              label="Стоимость"
-              value={`${sub.pointsPrice.toLocaleString('ru-RU')} баллов`}
+              label={`${sub.pointsPrice.toLocaleString('ru-RU')} × ${duration.months} мес.`}
+              value={`${total.toLocaleString('ru-RU')} баллов`}
+            />
+            {savings > 0 && (
+              <Row
+                label={`Скидка ${duration.discount}%`}
+                value={`−${savings.toLocaleString('ru-RU')}`}
+                accent
+              />
+            )}
+            <Row
+              label="К оплате"
+              value={`${discounted.toLocaleString('ru-RU')} баллов`}
             />
             <Row
               label={`Кэшбэк (${sub.cashbackPercent}%)`}
               value={`+${cashback.toLocaleString('ru-RU')} баллов`}
+              accent
             />
             <View style={styles.divider} />
             <Row
               label="Баланс после покупки"
               value={`${(
                 user.balance -
-                sub.pointsPrice +
+                discounted +
                 cashback
               ).toLocaleString('ru-RU')} баллов`}
             />
@@ -133,12 +226,12 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
         {canBuy && (
           <PrimaryButton
             title={
-              user.balance < sub.pointsPrice
-                ? `Не хватает ${(sub.pointsPrice - user.balance).toLocaleString('ru-RU')} баллов`
-                : `Купить за ${sub.pointsPrice.toLocaleString('ru-RU')} баллов`
+              user.balance < discounted
+                ? `Не хватает ${(discounted - user.balance).toLocaleString('ru-RU')} баллов`
+                : `Купить за ${discounted.toLocaleString('ru-RU')} баллов`
             }
             onPress={handleBuy}
-            disabled={user.balance < sub.pointsPrice}
+            disabled={user.balance < discounted}
             loading={loading}
             style={{ marginTop: 8 }}
           />
@@ -167,6 +260,7 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     marginTop: 6,
     marginBottom: 6,
+    flexWrap: 'wrap',
   },
   price: {
     fontSize: 24,
@@ -181,7 +275,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   points: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
     marginLeft: 8,
     fontWeight: '600',
@@ -205,9 +299,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     color: colors.text,
-    marginBottom: 10,
+    marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  cardSubtitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 10,
+  },
+  durationsList: {
+    marginTop: 4,
+  },
+  durationOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    marginBottom: 8,
+  },
+  durationOptionActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.surfaceAlt,
+  },
+  durationLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioActive: {
+    borderColor: colors.primary,
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary,
+  },
+  durationLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  durationLabelActive: {
+    color: colors.primaryDark,
+  },
+  durationBadge: {
+    fontSize: 11,
+    color: colors.success,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  durationPrice: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  durationPriceActive: {
+    color: colors.primary,
   },
   row: {
     flexDirection: 'row',

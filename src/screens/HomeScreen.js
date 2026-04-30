@@ -25,7 +25,7 @@ const formatDate = (ts) => {
 };
 
 const HomeScreen = ({ navigation }) => {
-  const { user, canClaimDaily, claimDailyBonus } = useAuth();
+  const { user, canClaimDaily, claimDailyBonus, trialDaysLeft } = useAuth();
   const [claiming, setClaiming] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -63,6 +63,28 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.hello}>Привет,</Text>
           <Text style={styles.name}>{user.name}!</Text>
         </View>
+
+        {user.isTrialActive && trialDaysLeft > 0 && (
+          <View style={styles.trialBanner}>
+            <View style={styles.trialBannerIcon}>
+              <Text style={styles.trialBannerIconText}>★</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.trialBannerTitle}>
+                Пробный период активен
+              </Text>
+              <Text style={styles.trialBannerSubtitle}>
+                Осталось {trialDaysLeft}{' '}
+                {trialDaysLeft === 1
+                  ? 'день'
+                  : trialDaysLeft < 5
+                  ? 'дня'
+                  : 'дней'}{' '}
+                · доступ ко всем премиум-функциям
+              </Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Баланс баллов</Text>
@@ -111,6 +133,32 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </TouchableOpacity>
 
+        <Text style={styles.sectionTitle}>Программа лояльности</Text>
+        <View style={styles.loyaltyRow}>
+          <TouchableOpacity
+            style={[styles.loyaltyCard, styles.loyaltyReferral]}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Text style={styles.loyaltyIcon}>♥</Text>
+            <Text style={styles.loyaltyTitle}>Рефералы</Text>
+            <Text style={styles.loyaltyValue}>
+              {(user.referrals || []).length}
+            </Text>
+            <Text style={styles.loyaltyLink}>Промокод →</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.loyaltyCard, styles.loyaltyAchievements]}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Text style={styles.loyaltyIcon}>♛</Text>
+            <Text style={styles.loyaltyTitle}>Достижения</Text>
+            <Text style={styles.loyaltyValue}>
+              {Object.keys(user.achievements || {}).length}/6
+            </Text>
+            <Text style={styles.loyaltyLink}>Открыть →</Text>
+          </TouchableOpacity>
+        </View>
+
         <Text style={styles.sectionTitle}>Быстрые действия</Text>
         <View style={styles.actionsRow}>
           <TouchableOpacity
@@ -122,17 +170,17 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionCard}
+            onPress={() => navigation.navigate('Forum')}
+          >
+            <Text style={styles.actionIcon}>✎</Text>
+            <Text style={styles.actionLabel}>Сообщество</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionCard}
             onPress={() => navigation.navigate('History')}
           >
             <Text style={styles.actionIcon}>≡</Text>
             <Text style={styles.actionLabel}>История</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('Profile')}
-          >
-            <Text style={styles.actionIcon}>●</Text>
-            <Text style={styles.actionLabel}>Профиль</Text>
           </TouchableOpacity>
         </View>
 
@@ -165,7 +213,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   greetingBlock: {
-    marginBottom: 18,
+    marginBottom: 14,
   },
   hello: {
     fontSize: 16,
@@ -175,6 +223,38 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '800',
     color: colors.text,
+  },
+  trialBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.warning,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
+  },
+  trialBannerIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  trialBannerIconText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  trialBannerTitle: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  trialBannerSubtitle: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    marginTop: 2,
   },
   balanceCard: {
     backgroundColor: colors.primary,
@@ -260,6 +340,50 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.text,
     marginBottom: 12,
+    marginTop: 4,
+  },
+  loyaltyRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 22,
+  },
+  loyaltyCard: {
+    flex: 1,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+  },
+  loyaltyReferral: {
+    backgroundColor: colors.surface,
+    borderColor: colors.primaryLight,
+  },
+  loyaltyAchievements: {
+    backgroundColor: colors.surfaceAlt,
+    borderColor: colors.primaryLight,
+  },
+  loyaltyIcon: {
+    fontSize: 22,
+    color: colors.primary,
+    fontWeight: '900',
+  },
+  loyaltyTitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 8,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  loyaltyValue: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.primaryDark,
+    marginTop: 2,
+  },
+  loyaltyLink: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '700',
     marginTop: 4,
   },
   actionsRow: {
