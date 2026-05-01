@@ -195,48 +195,9 @@ const ProfileScreen = ({ navigation }) => {
             <Text style={styles.topUpArrow}>›</Text>
           </TouchableOpacity>
 
-          <View style={styles.cardPerks}>
-            <Text style={styles.cardPerksTitle}>
-              Накопления и привилегии
-            </Text>
-            <Text style={styles.cardPerksText}>
-              На Альфа-карте копятся Альфа баллы — внутренняя валюта приложения.
-              Получайте их за активность в системе AlfaStat и оплачивайте
-              подписки со скидкой до 20%.
-            </Text>
-            <View style={styles.cardActionsRow}>
-              <View style={styles.cardActionItem}>
-                <Text style={styles.cardActionGlyph}>↑</Text>
-                <Text style={styles.cardActionLabel}>Пополнение</Text>
-                <Text style={styles.cardActionHint}>
-                  Бонусы, кэшбэк, рефералы
-                </Text>
-              </View>
-              <View style={styles.cardActionItem}>
-                <Text style={styles.cardActionGlyph}>↓</Text>
-                <Text style={styles.cardActionLabel}>Списание</Text>
-                <Text style={styles.cardActionHint}>
-                  Подписки и услуги
-                </Text>
-              </View>
-              <View style={styles.cardActionItem}>
-                <Text style={styles.cardActionGlyph}>★</Text>
-                <Text style={styles.cardActionLabel}>Привилегии</Text>
-                <Text style={styles.cardActionHint}>
-                  Telegram, скидки
-                </Text>
-              </View>
-            </View>
-          </View>
         </View>
 
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>
-              {user.balance.toLocaleString('ru-RU')}
-            </Text>
-            <Text style={styles.statLabel}>Альфа баллов</Text>
-          </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{purchasesCount}</Text>
             <Text style={styles.statLabel}>Покупок</Text>
