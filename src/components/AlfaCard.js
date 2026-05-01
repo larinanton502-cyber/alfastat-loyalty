@@ -53,7 +53,7 @@ const AlfaCard = ({ user }) => {
           <Text style={styles.brandSubtitle}>AlfaStat Loyalty</Text>
         </View>
         <View style={styles.logoBox}>
-          <Text style={styles.logoText}>α</Text>
+          <Text style={styles.logoText}>AS</Text>
         </View>
       </View>
 
@@ -67,7 +67,7 @@ const AlfaCard = ({ user }) => {
           <Text style={styles.balanceValue}>
             {user.balance.toLocaleString('ru-RU')}
           </Text>
-          <Text style={styles.balanceUnit}>α-коинов</Text>
+          <Text style={styles.balanceUnit}>Альфа баллов</Text>
         </View>
       </View>
 
@@ -150,8 +150,9 @@ const styles = StyleSheet.create({
   },
   logoText: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: '900',
+    letterSpacing: 1,
   },
   chip: {
     width: 36,

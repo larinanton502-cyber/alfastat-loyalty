@@ -55,7 +55,7 @@ const LoginScreen = ({ navigation }) => {
           <View style={styles.inner}>
             <View style={styles.header}>
               <View style={styles.logoBox}>
-                <Text style={styles.logoMark}>α</Text>
+                <Text style={styles.logoMark}>А</Text>
               </View>
               <Text style={styles.title}>Добро пожаловать</Text>
               <Text style={styles.subtitle}>

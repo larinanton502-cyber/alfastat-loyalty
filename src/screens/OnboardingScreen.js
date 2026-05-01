@@ -128,7 +128,7 @@ const Slide = ({ slide, width }) => {
       >
         {visual === 'logo' && (
           <View style={styles.logoBox}>
-            <Text style={styles.logoMark}>α</Text>
+            <Text style={styles.logoMark}>А</Text>
           </View>
         )}
 

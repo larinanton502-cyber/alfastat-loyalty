@@ -182,7 +182,7 @@ const ProfileScreen = ({ navigation }) => {
               Накопления и привилегии
             </Text>
             <Text style={styles.cardPerksText}>
-              На Альфа-карте копятся α-коины — внутренняя валюта приложения.
+              На Альфа-карте копятся Альфа баллы — внутренняя валюта приложения.
               Получайте их за активность в системе AlfaStat и оплачивайте
               подписки со скидкой до 20%.
             </Text>
@@ -217,7 +217,7 @@ const ProfileScreen = ({ navigation }) => {
             <Text style={styles.statValue}>
               {user.balance.toLocaleString('ru-RU')}
             </Text>
-            <Text style={styles.statLabel}>α-коинов</Text>
+            <Text style={styles.statLabel}>Альфа баллов</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{purchasesCount}</Text>
@@ -250,8 +250,8 @@ const ProfileScreen = ({ navigation }) => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Реферальная программа</Text>
           <Text style={styles.cardSubtitle}>
-            Поделитесь промокодом — друг получит {REFERRAL_BONUS_REFERRED} α-коинов,
-            вы получите {REFERRAL_BONUS_REFERRER} α-коинов.
+            Поделитесь промокодом — друг получит {REFERRAL_BONUS_REFERRED} Альфа баллов,
+            вы получите {REFERRAL_BONUS_REFERRER} Альфа баллов.
           </Text>
           <TouchableOpacity
             activeOpacity={0.85}
@@ -379,7 +379,7 @@ const ProfileScreen = ({ navigation }) => {
           />
           <InfoRow
             label="Всего потрачено"
-            value={`${totalSpent.toLocaleString('ru-RU')} α-коинов`}
+            value={`${totalSpent.toLocaleString('ru-RU')} Альфа баллов`}
           />
         </View>
 

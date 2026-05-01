@@ -155,7 +155,7 @@ export const ACHIEVEMENTS = [
   {
     id: 'big_spender',
     title: 'Большие траты',
-    description: 'Потратьте суммарно 5 000 α-коинов',
+    description: 'Потратьте суммарно 5 000 Альфа баллов',
     glyph: '◆',
     reward: 1000,
   },

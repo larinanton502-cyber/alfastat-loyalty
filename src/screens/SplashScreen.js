@@ -13,7 +13,7 @@ const SplashScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.logoBox}>
-        <Text style={styles.logoMark}>α</Text>
+        <Text style={styles.logoMark}>А</Text>
       </View>
       <Text style={styles.title}>AlfaStat</Text>
       <Text style={styles.subtitle}>Loyalty Program</Text>

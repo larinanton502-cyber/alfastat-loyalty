@@ -50,9 +50,9 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
       title: 'Подтверждение покупки',
       message: `Тариф «${sub.name}» на ${duration.label}\nСписать: ${discounted.toLocaleString(
         'ru-RU'
-      )} α-коинов${
+      )} Альфа баллов${
         savings > 0 ? `\nСкидка: ${savings.toLocaleString('ru-RU')}` : ''
-      }\nКэшбэк: ${cashback} α-коинов (${sub.cashbackPercent}%)`,
+      }\nКэшбэк: ${cashback} Альфа баллов (${sub.cashbackPercent}%)`,
       confirmText: 'Купить',
       onConfirm: async () => {
         setLoading(true);
@@ -60,7 +60,7 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
           await buySubscription(sub.id, duration.months, duration.discount);
           notify({
             title: 'Покупка успешна',
-            message: `Тариф «${sub.name}» активирован на ${duration.label}.\nНачислено ${cashback} α-коинов кэшбэка.`,
+            message: `Тариф «${sub.name}» активирован на ${duration.label}.\nНачислено ${cashback} Альфа баллов кэшбэка.`,
             onClose: () => navigation.goBack(),
           });
         } catch (e) {
@@ -87,7 +87,7 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
             </Text>
             {sub.pointsPrice > 0 && (
               <Text style={styles.points}>
-                {sub.pointsPrice.toLocaleString('ru-RU')} α-коинов / мес.
+                {sub.pointsPrice.toLocaleString('ru-RU')} Альфа баллов / мес.
               </Text>
             )}
           </View>
@@ -173,11 +173,11 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
             <Text style={styles.cardTitle}>Расчёт</Text>
             <Row
               label="Ваш баланс"
-              value={`${user.balance.toLocaleString('ru-RU')} α-коинов`}
+              value={`${user.balance.toLocaleString('ru-RU')} Альфа баллов`}
             />
             <Row
               label={`${sub.pointsPrice.toLocaleString('ru-RU')} × ${duration.months} мес.`}
-              value={`${total.toLocaleString('ru-RU')} α-коинов`}
+              value={`${total.toLocaleString('ru-RU')} Альфа баллов`}
             />
             {savings > 0 && (
               <Row
@@ -188,11 +188,11 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
             )}
             <Row
               label="К оплате"
-              value={`${discounted.toLocaleString('ru-RU')} α-коинов`}
+              value={`${discounted.toLocaleString('ru-RU')} Альфа баллов`}
             />
             <Row
               label={`Кэшбэк (${sub.cashbackPercent}%)`}
-              value={`+${cashback.toLocaleString('ru-RU')} α-коинов`}
+              value={`+${cashback.toLocaleString('ru-RU')} Альфа баллов`}
               accent
             />
             <View style={styles.divider} />
@@ -202,7 +202,7 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
                 user.balance -
                 discounted +
                 cashback
-              ).toLocaleString('ru-RU')} α-коинов`}
+              ).toLocaleString('ru-RU')} Альфа баллов`}
             />
           </View>
         )}
@@ -227,8 +227,8 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
           <PrimaryButton
             title={
               user.balance < discounted
-                ? `Не хватает ${(discounted - user.balance).toLocaleString('ru-RU')} α-коинов`
-                : `Купить за ${discounted.toLocaleString('ru-RU')} α-коинов`
+                ? `Не хватает ${(discounted - user.balance).toLocaleString('ru-RU')} Альфа баллов`
+                : `Купить за ${discounted.toLocaleString('ru-RU')} Альфа баллов`
             }
             onPress={handleBuy}
             disabled={user.balance < discounted}

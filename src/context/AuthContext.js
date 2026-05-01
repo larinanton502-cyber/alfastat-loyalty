@@ -61,7 +61,7 @@ const evaluateAchievements = (user) => {
           id: `${Date.now()}_ach_${id}_${Math.random().toString(36).slice(2, 6)}`,
           type: 'achievement',
           title: `Достижение: ${def.title}`,
-          subtitle: `${def.description} · +${def.reward} α-коинов`,
+          subtitle: `${def.description} · +${def.reward} Альфа баллов`,
           pointsSpent: 0,
           pointsEarned: def.reward,
           date: Date.now(),
@@ -301,7 +301,7 @@ export const AuthProvider = ({ children }) => {
 
     if (user.balance < discounted) {
       throw new Error(
-        `Недостаточно α-коинов. Не хватает: ${discounted - user.balance}`
+        `Недостаточно Альфа баллов. Не хватает: ${discounted - user.balance}`
       );
     }
 
@@ -322,8 +322,8 @@ export const AuthProvider = ({ children }) => {
           title: `Подписка «${sub.name}» · ${months} мес.`,
           subtitle:
             savings > 0
-              ? `Списано ${discounted} α-коинов (скидка ${savings}) · Кэшбэк ${cashback}`
-              : `Списано ${discounted} α-коинов · Кэшбэк ${cashback}`,
+              ? `Списано ${discounted} Альфа баллов (скидка ${savings}) · Кэшбэк ${cashback}`
+              : `Списано ${discounted} Альфа баллов · Кэшбэк ${cashback}`,
           subscriptionId: sub.id,
           subscriptionName: sub.name,
           months,
