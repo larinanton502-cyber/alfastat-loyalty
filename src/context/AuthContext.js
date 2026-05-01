@@ -180,6 +180,8 @@ export const AuthProvider = ({ children }) => {
       referrals: [],
       achievements: {},
       forumPostsCount: 0,
+      hasCard: false,
+      cardIssuedAt: null,
       history: initialHistory,
     };
 
@@ -287,6 +289,9 @@ export const AuthProvider = ({ children }) => {
 
   const buySubscription = async (subscriptionId, months = 1, discountPercent = 0) => {
     if (!user) return;
+    if (!user.hasCard) {
+      throw new Error('Сначала оформите Альфа-карту в профиле');
+    }
     const sub = getSubscriptionById(subscriptionId);
     if (!sub) throw new Error('Тариф не найден');
     if (sub.isCustom || sub.pointsPrice == null) {
@@ -355,8 +360,37 @@ export const AuthProvider = ({ children }) => {
     return persist(next);
   };
 
+  const issueCard = async () => {
+    if (!user) return;
+    if (user.hasCard) {
+      throw new Error('Альфа-карта уже выпущена');
+    }
+    const now = Date.now();
+    const next = {
+      ...user,
+      hasCard: true,
+      cardIssuedAt: now,
+      history: [
+        {
+          id: `${now}_card`,
+          type: 'card',
+          title: 'Альфа-карта выпущена',
+          subtitle: 'Бесплатное оформление · действует 5 лет',
+          pointsSpent: 0,
+          pointsEarned: 0,
+          date: now,
+        },
+        ...user.history,
+      ],
+    };
+    return persist(next);
+  };
+
   const topUp = async ({ amount, cardLast4 }) => {
     if (!user) return;
+    if (!user.hasCard) {
+      throw new Error('Сначала оформите Альфа-карту');
+    }
     const value = Number(amount);
     if (!value || value <= 0) {
       throw new Error('Введите корректную сумму');
@@ -424,6 +458,7 @@ export const AuthProvider = ({ children }) => {
         buySubscription,
         addForumPost,
         topUp,
+        issueCard,
       }}
     >
       {children}

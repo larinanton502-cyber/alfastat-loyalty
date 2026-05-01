@@ -105,13 +105,25 @@ const HomeScreen = ({ navigation }) => {
               </View>
             )}
           </View>
-          <TouchableOpacity
-            style={styles.topUpInline}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('TopUp')}
-          >
-            <Text style={styles.topUpInlineText}>+ Пополнить карту</Text>
-          </TouchableOpacity>
+          {user.hasCard ? (
+            <TouchableOpacity
+              style={styles.topUpInline}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('TopUp')}
+            >
+              <Text style={styles.topUpInlineText}>+ Пополнить карту</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.topUpInline}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Profile')}
+            >
+              <Text style={styles.topUpInlineText}>
+                Оформить Альфа-карту →
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <TouchableOpacity

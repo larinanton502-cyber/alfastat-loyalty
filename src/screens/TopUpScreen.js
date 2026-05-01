@@ -89,6 +89,26 @@ const TopUpScreen = ({ navigation }) => {
     }
   };
 
+  if (!user.hasCard) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['bottom']}>
+        <View style={styles.noCardWrap}>
+          <Text style={styles.noCardEmoji}>◇</Text>
+          <Text style={styles.noCardTitle}>Альфа-карта не оформлена</Text>
+          <Text style={styles.noCardText}>
+            Чтобы пополнить баланс, сначала оформите Альфа-карту в профиле.
+            Это бесплатно и занимает 30 секунд.
+          </Text>
+          <PrimaryButton
+            title="Перейти в профиль"
+            onPress={() => navigation.navigate('Main', { screen: 'Profile' })}
+            style={{ marginTop: 18, width: '100%', maxWidth: 320 }}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <KeyboardAvoidingView
@@ -457,6 +477,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 12,
     lineHeight: 16,
+  },
+  noCardWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 30,
+  },
+  noCardEmoji: {
+    fontSize: 64,
+    color: colors.primaryLight,
+    marginBottom: 14,
+    fontWeight: '900',
+  },
+  noCardTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  noCardText: {
+    fontSize: 14,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginTop: 8,
   },
 });
 

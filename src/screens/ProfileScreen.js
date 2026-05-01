@@ -40,7 +40,7 @@ const InfoRow = ({ label, value }) => (
 );
 
 const ProfileScreen = ({ navigation }) => {
-  const { user, logout, updateProfile, changePassword, isPremiumActive } = useAuth();
+  const { user, logout, updateProfile, changePassword, issueCard, isPremiumActive } = useAuth();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '' });
   const [saving, setSaving] = useState(false);
@@ -51,6 +51,7 @@ const ProfileScreen = ({ navigation }) => {
     confirmPassword: '',
   });
   const [changingPassword, setChangingPassword] = useState(false);
+  const [issuingCard, setIssuingCard] = useState(false);
 
   if (!user) return null;
   const subscription = getSubscriptionById(user.currentSubscription);
@@ -79,6 +80,23 @@ const ProfileScreen = ({ navigation }) => {
       setEditing(false);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleIssueCard = async () => {
+    setIssuingCard(true);
+    await new Promise((r) => setTimeout(r, 800));
+    try {
+      await issueCard();
+      notify({
+        title: 'Альфа-карта выпущена',
+        message:
+          'Поздравляем! Теперь вы можете копить Альфа баллы и оплачивать ими подписки со скидкой.',
+      });
+    } catch (e) {
+      notify({ title: 'Ошибка', message: e.message });
+    } finally {
+      setIssuingCard(false);
     }
   };
 
@@ -168,34 +186,104 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.email}>{user.email}</Text>
         </View>
 
-        <View style={styles.cardSection}>
-          <View style={styles.cardSectionHeader}>
-            <Text style={styles.cardSectionTitle}>Альфа-карта</Text>
-            <View style={styles.activeBadge}>
-              <View style={styles.activeBadgeDot} />
-              <Text style={styles.activeBadgeText}>Активна</Text>
+        {user.hasCard ? (
+          <View style={styles.cardSection}>
+            <View style={styles.cardSectionHeader}>
+              <Text style={styles.cardSectionTitle}>Альфа-карта</Text>
+              <View style={styles.activeBadge}>
+                <View style={styles.activeBadgeDot} />
+                <Text style={styles.activeBadgeText}>Активна</Text>
+              </View>
             </View>
-          </View>
-          <AlfaCard user={user} />
+            <AlfaCard user={user} />
 
-          <TouchableOpacity
-            style={styles.topUpButton}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('TopUp')}
-          >
-            <View style={styles.topUpIcon}>
-              <Text style={styles.topUpIconText}>+</Text>
+            <TouchableOpacity
+              style={styles.topUpButton}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('TopUp')}
+            >
+              <View style={styles.topUpIcon}>
+                <Text style={styles.topUpIconText}>+</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.topUpTitle}>Пополнить карту</Text>
+                <Text style={styles.topUpSubtitle}>
+                  Оплата банковской картой · 1 ₽ = 1 балл
+                </Text>
+              </View>
+              <Text style={styles.topUpArrow}>›</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.issueCardSection}>
+            <View style={styles.issueCardBadge}>
+              <Text style={styles.issueCardBadgeText}>НОВОЕ ПРЕДЛОЖЕНИЕ</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.topUpTitle}>Пополнить карту</Text>
-              <Text style={styles.topUpSubtitle}>
-                Оплата банковской картой · 1 ₽ = 1 балл
+            <Text style={styles.issueCardTitle}>Оформите Альфа-карту</Text>
+            <Text style={styles.issueCardSubtitle}>
+              Бесплатно · занимает 30 секунд · действует 5 лет
+            </Text>
+
+            <View style={styles.issueCardPreview}>
+              <View style={styles.issueCardCorner} />
+              <Text style={styles.issueCardPreviewBrand}>Альфа-карта</Text>
+              <Text style={styles.issueCardPreviewSub}>AlfaStat Loyalty</Text>
+              <View style={styles.issueCardChip} />
+              <Text style={styles.issueCardPreviewNumber}>
+                ••••  ••••  ••••  ••••
+              </Text>
+              <Text style={styles.issueCardPreviewName}>
+                {(user.name || 'CARD HOLDER').toUpperCase()}
               </Text>
             </View>
-            <Text style={styles.topUpArrow}>›</Text>
-          </TouchableOpacity>
 
-        </View>
+            <View style={styles.benefitsList}>
+              <Text style={styles.benefitsTitle}>Что вы получите:</Text>
+              <View style={styles.benefitRow}>
+                <Text style={styles.benefitCheck}>✓</Text>
+                <Text style={styles.benefitText}>
+                  Накопление Альфа баллов за активность
+                </Text>
+              </View>
+              <View style={styles.benefitRow}>
+                <Text style={styles.benefitCheck}>✓</Text>
+                <Text style={styles.benefitText}>
+                  Скидки до 20% при оплате тарифов вперёд
+                </Text>
+              </View>
+              <View style={styles.benefitRow}>
+                <Text style={styles.benefitCheck}>✓</Text>
+                <Text style={styles.benefitText}>
+                  Кэшбэк 10–15% с каждой покупки подписки
+                </Text>
+              </View>
+              <View style={styles.benefitRow}>
+                <Text style={styles.benefitCheck}>✓</Text>
+                <Text style={styles.benefitText}>
+                  Реферальная программа: +2000 баллов за друга
+                </Text>
+              </View>
+              <View style={styles.benefitRow}>
+                <Text style={styles.benefitCheck}>✓</Text>
+                <Text style={styles.benefitText}>
+                  Достижения и эксклюзивные привилегии
+                </Text>
+              </View>
+            </View>
+
+            <PrimaryButton
+              title={issuingCard ? 'Оформляем…' : 'Оформить Альфа-карту'}
+              onPress={handleIssueCard}
+              loading={issuingCard}
+              style={{ marginTop: 8 }}
+            />
+
+            <Text style={styles.issueCardLegal}>
+              Нажимая «Оформить», вы соглашаетесь с условиями программы
+              лояльности AlfaStat. Карта виртуальная, без выпуска пластика.
+            </Text>
+          </View>
+        )}
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
@@ -553,6 +641,128 @@ const styles = StyleSheet.create({
   },
   cardSection: {
     marginTop: 14,
+  },
+  issueCardSection: {
+    marginTop: 14,
+    backgroundColor: colors.surface,
+    borderRadius: 18,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.primaryLight,
+  },
+  issueCardBadge: {
+    backgroundColor: colors.warning,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  issueCardBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  issueCardTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: colors.text,
+  },
+  issueCardSubtitle: {
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+  issueCardPreview: {
+    backgroundColor: colors.primaryDark,
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 16,
+    overflow: 'hidden',
+    minHeight: 160,
+    opacity: 0.92,
+  },
+  issueCardCorner: {
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: colors.primary,
+    opacity: 0.5,
+  },
+  issueCardPreviewBrand: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  issueCardPreviewSub: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  issueCardChip: {
+    width: 32,
+    height: 24,
+    borderRadius: 5,
+    backgroundColor: '#C9A856',
+    marginTop: 14,
+  },
+  issueCardPreviewNumber: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 4,
+    marginTop: 14,
+  },
+  issueCardPreviewName: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 8,
+    letterSpacing: 0.5,
+  },
+  benefitsList: {
+    marginBottom: 6,
+  },
+  benefitsTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  benefitRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 5,
+  },
+  benefitCheck: {
+    color: colors.success,
+    fontWeight: '900',
+    fontSize: 16,
+    marginRight: 10,
+    width: 16,
+  },
+  benefitText: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 19,
+  },
+  issueCardLegal: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 12,
+    textAlign: 'center',
+    lineHeight: 16,
   },
   cardSectionHeader: {
     flexDirection: 'row',

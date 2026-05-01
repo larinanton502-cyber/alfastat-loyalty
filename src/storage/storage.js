@@ -31,6 +31,10 @@ const migrateUser = (user) => {
   if (!Array.isArray(out.history)) out.history = [];
   if (typeof out.balance !== 'number') out.balance = 0;
   if (!out.currentSubscription) out.currentSubscription = 'free';
+  if (typeof out.hasCard !== 'boolean') {
+    out.hasCard = true;
+    out.cardIssuedAt = out.cardIssuedAt || out.registeredAt || Date.now();
+  }
   return out;
 };
 

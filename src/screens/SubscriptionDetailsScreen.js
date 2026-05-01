@@ -223,15 +223,25 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
           </View>
         )}
 
+        {canBuy && !user.hasCard && (
+          <View style={[styles.card, styles.noCardNote]}>
+            <Text style={styles.noCardNoteText}>
+              Для оплаты подписки оформите Альфа-карту в профиле — это бесплатно.
+            </Text>
+          </View>
+        )}
+
         {canBuy && (
           <PrimaryButton
             title={
-              user.balance < discounted
+              !user.hasCard
+                ? 'Оформите Альфа-карту'
+                : user.balance < discounted
                 ? `Не хватает ${(discounted - user.balance).toLocaleString('ru-RU')} Альфа баллов`
                 : `Купить за ${discounted.toLocaleString('ru-RU')} Альфа баллов`
             }
-            onPress={handleBuy}
-            disabled={user.balance < discounted}
+            onPress={!user.hasCard ? () => navigation.navigate('Main', { screen: 'Profile' }) : handleBuy}
+            disabled={user.hasCard && user.balance < discounted}
             loading={loading}
             style={{ marginTop: 8 }}
           />
@@ -403,6 +413,17 @@ const styles = StyleSheet.create({
     color: colors.success,
     fontWeight: '700',
     fontSize: 13,
+  },
+  noCardNote: {
+    backgroundColor: '#FFF3E0',
+    borderColor: colors.warning,
+    alignItems: 'center',
+  },
+  noCardNoteText: {
+    color: colors.warning,
+    fontWeight: '700',
+    fontSize: 13,
+    textAlign: 'center',
   },
 });
 
