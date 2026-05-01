@@ -49,6 +49,7 @@ const evaluateAchievements = (user) => {
     { id: 'referrer', condition: referralsCount >= 1 },
     { id: 'subscription_master', condition: uniqueSubs >= 3 },
     { id: 'community', condition: forumPostsCount >= 1 },
+    { id: 'card_holder', condition: user.hasCard === true },
   ];
 
   for (const { id, condition } of checks) {
@@ -366,7 +367,7 @@ export const AuthProvider = ({ children }) => {
       throw new Error('Альфа-карта уже выпущена');
     }
     const now = Date.now();
-    const next = {
+    let next = {
       ...user,
       hasCard: true,
       cardIssuedAt: now,
@@ -383,6 +384,7 @@ export const AuthProvider = ({ children }) => {
         ...user.history,
       ],
     };
+    next = applyAchievements(next);
     return persist(next);
   };
 

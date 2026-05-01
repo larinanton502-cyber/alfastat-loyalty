@@ -13,6 +13,7 @@ import { colors } from '../constants/colors';
 import {
   getSubscriptionById,
   DAILY_BONUS,
+  ACHIEVEMENTS,
 } from '../constants/subscriptions';
 import HistoryItem from '../components/HistoryItem';
 import { notify } from '../utils/dialog';
@@ -172,7 +173,7 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.loyaltyIcon}>♛</Text>
             <Text style={styles.loyaltyTitle}>Достижения</Text>
             <Text style={styles.loyaltyValue}>
-              {Object.keys(user.achievements || {}).length}/6
+              {Object.keys(user.achievements || {}).length}/{ACHIEVEMENTS.length}
             </Text>
             <Text style={styles.loyaltyLink}>Открыть →</Text>
           </TouchableOpacity>

@@ -189,6 +189,13 @@ export const ACHIEVEMENTS = [
     glyph: '✎',
     reward: 300,
   },
+  {
+    id: 'card_holder',
+    title: 'Держатель карты',
+    description: 'Оформите Альфа-карту',
+    glyph: '◈',
+    reward: 1000,
+  },
 ];
 
 export const TELEGRAM_INVITE_URL = 'https://t.me/+alfastat_premium_demo';
