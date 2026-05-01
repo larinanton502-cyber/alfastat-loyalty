@@ -38,7 +38,7 @@ const SubscriptionCard = ({ subscription, isActive, onPress }) => {
             </Text>
             {pointsPrice > 0 && (
               <Text style={styles.points}>
-                · {pointsPrice.toLocaleString('ru-RU')} баллов
+                · {pointsPrice.toLocaleString('ru-RU')} α-коинов
               </Text>
             )}
           </>

@@ -38,7 +38,7 @@ const HomeScreen = ({ navigation }) => {
     setClaiming(true);
     try {
       await claimDailyBonus();
-      notify({ title: 'Успех', message: `Начислено ${DAILY_BONUS} баллов!` });
+      notify({ title: 'Успех', message: `Начислено ${DAILY_BONUS} α-коинов!` });
     } catch (e) {
       notify({ title: 'Не получилось', message: e.message });
     } finally {
@@ -87,7 +87,7 @@ const HomeScreen = ({ navigation }) => {
         )}
 
         <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Баланс баллов</Text>
+          <Text style={styles.balanceLabel}>Баланс α-коинов</Text>
           <Text style={styles.balanceValue}>
             {user.balance.toLocaleString('ru-RU')}
           </Text>
@@ -122,7 +122,7 @@ const HomeScreen = ({ navigation }) => {
             </Text>
             <Text style={styles.dailySubtitle}>
               {canClaimDaily
-                ? `Получите +${DAILY_BONUS} баллов прямо сейчас`
+                ? `Получите +${DAILY_BONUS} α-коинов прямо сейчас`
                 : 'Возвращайтесь завтра за новым бонусом'}
             </Text>
           </View>

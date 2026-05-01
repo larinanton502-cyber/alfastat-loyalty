@@ -22,6 +22,7 @@ import {
 } from '../constants/subscriptions';
 import PrimaryButton from '../components/PrimaryButton';
 import TextField from '../components/TextField';
+import AlfaCard from '../components/AlfaCard';
 import { confirm, notify } from '../utils/dialog';
 
 const formatDate = (ts) => {
@@ -167,12 +168,56 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.email}>{user.email}</Text>
         </View>
 
+        <View style={styles.cardSection}>
+          <View style={styles.cardSectionHeader}>
+            <Text style={styles.cardSectionTitle}>Альфа-карта</Text>
+            <View style={styles.activeBadge}>
+              <View style={styles.activeBadgeDot} />
+              <Text style={styles.activeBadgeText}>Активна</Text>
+            </View>
+          </View>
+          <AlfaCard user={user} />
+          <View style={styles.cardPerks}>
+            <Text style={styles.cardPerksTitle}>
+              Накопления и привилегии
+            </Text>
+            <Text style={styles.cardPerksText}>
+              На Альфа-карте копятся α-коины — внутренняя валюта приложения.
+              Получайте их за активность в системе AlfaStat и оплачивайте
+              подписки со скидкой до 20%.
+            </Text>
+            <View style={styles.cardActionsRow}>
+              <View style={styles.cardActionItem}>
+                <Text style={styles.cardActionGlyph}>↑</Text>
+                <Text style={styles.cardActionLabel}>Пополнение</Text>
+                <Text style={styles.cardActionHint}>
+                  Бонусы, кэшбэк, рефералы
+                </Text>
+              </View>
+              <View style={styles.cardActionItem}>
+                <Text style={styles.cardActionGlyph}>↓</Text>
+                <Text style={styles.cardActionLabel}>Списание</Text>
+                <Text style={styles.cardActionHint}>
+                  Подписки и услуги
+                </Text>
+              </View>
+              <View style={styles.cardActionItem}>
+                <Text style={styles.cardActionGlyph}>★</Text>
+                <Text style={styles.cardActionLabel}>Привилегии</Text>
+                <Text style={styles.cardActionHint}>
+                  Telegram, скидки
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>
               {user.balance.toLocaleString('ru-RU')}
             </Text>
-            <Text style={styles.statLabel}>Баллов</Text>
+            <Text style={styles.statLabel}>α-коинов</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{purchasesCount}</Text>
@@ -205,8 +250,8 @@ const ProfileScreen = ({ navigation }) => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Реферальная программа</Text>
           <Text style={styles.cardSubtitle}>
-            Поделитесь промокодом — друг получит {REFERRAL_BONUS_REFERRED} баллов,
-            вы получите {REFERRAL_BONUS_REFERRER} баллов.
+            Поделитесь промокодом — друг получит {REFERRAL_BONUS_REFERRED} α-коинов,
+            вы получите {REFERRAL_BONUS_REFERRER} α-коинов.
           </Text>
           <TouchableOpacity
             activeOpacity={0.85}
@@ -334,7 +379,7 @@ const ProfileScreen = ({ navigation }) => {
           />
           <InfoRow
             label="Всего потрачено"
-            value={`${totalSpent.toLocaleString('ru-RU')} баллов`}
+            value={`${totalSpent.toLocaleString('ru-RU')} α-коинов`}
           />
         </View>
 
@@ -526,6 +571,94 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     marginTop: 4,
+  },
+  cardSection: {
+    marginTop: 14,
+  },
+  cardSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  cardSectionTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  activeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.successLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  activeBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.success,
+    marginRight: 5,
+  },
+  activeBadgeText: {
+    color: colors.success,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  cardPerks: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  cardPerksTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  cardPerksText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
+    marginBottom: 14,
+  },
+  cardActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  cardActionItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  cardActionGlyph: {
+    fontSize: 18,
+    color: colors.primary,
+    fontWeight: '900',
+  },
+  cardActionLabel: {
+    fontSize: 12,
+    color: colors.text,
+    fontWeight: '800',
+    marginTop: 4,
+  },
+  cardActionHint: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2,
+    textAlign: 'center',
   },
   statsRow: {
     flexDirection: 'row',

@@ -14,7 +14,7 @@ const SubscriptionsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.balanceBlock}>
-          <Text style={styles.balanceLabel}>Доступно баллов</Text>
+          <Text style={styles.balanceLabel}>Доступно α-коинов</Text>
           <Text style={styles.balanceValue}>
             {user.balance.toLocaleString('ru-RU')}
           </Text>
@@ -22,7 +22,7 @@ const SubscriptionsScreen = ({ navigation }) => {
 
         <Text style={styles.heading}>Тарифы AlfaStat</Text>
         <Text style={styles.description}>
-          Выберите подходящий тариф. Оплатите баллами и получите кэшбэк.
+          Выберите подходящий тариф. Оплатите α-коинами и получите кэшбэк.
         </Text>
 
         <View style={styles.discountBanner}>
