@@ -128,8 +128,10 @@ export const SUBSCRIPTIONS = [
   },
 ];
 
-export const WELCOME_BONUS = 30000;
+export const WELCOME_BONUS = 0;
 export const DAILY_BONUS = 100;
+
+export const TOP_UP_PRESETS = [1000, 3000, 5000, 10000, 30000, 50000];
 
 export const SUBSCRIPTION_DURATIONS = [
   { months: 1, discount: 0, label: '1 месяц' },

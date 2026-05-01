@@ -128,15 +128,6 @@ export const AuthProvider = ({ children }) => {
 
     const initialHistory = [
       {
-        id: `${now}_welcome`,
-        type: 'welcome',
-        title: 'Стартовый баланс',
-        subtitle: 'Начислено за регистрацию',
-        pointsSpent: 0,
-        pointsEarned: WELCOME_BONUS,
-        date: now,
-      },
-      {
         id: `${now}_trial`,
         type: 'trial',
         title: `Пробный период · ${TRIAL_DURATION_DAYS} дней`,
@@ -146,6 +137,18 @@ export const AuthProvider = ({ children }) => {
         date: now,
       },
     ];
+
+    if (WELCOME_BONUS > 0) {
+      initialHistory.unshift({
+        id: `${now}_welcome`,
+        type: 'welcome',
+        title: 'Стартовый баланс',
+        subtitle: 'Начислено за регистрацию',
+        pointsSpent: 0,
+        pointsEarned: WELCOME_BONUS,
+        date: now,
+      });
+    }
 
     if (referralBonus > 0) {
       initialHistory.unshift({
@@ -352,6 +355,41 @@ export const AuthProvider = ({ children }) => {
     return persist(next);
   };
 
+  const topUp = async ({ amount, cardLast4 }) => {
+    if (!user) return;
+    const value = Number(amount);
+    if (!value || value <= 0) {
+      throw new Error('Введите корректную сумму');
+    }
+    if (value < 100) {
+      throw new Error('Минимальная сумма пополнения — 100');
+    }
+    if (value > 1_000_000) {
+      throw new Error('Максимальная сумма пополнения — 1 000 000');
+    }
+    const now = Date.now();
+    const last4 = cardLast4 ? cardLast4.slice(-4) : '••••';
+    const next = {
+      ...user,
+      balance: user.balance + value,
+      history: [
+        {
+          id: `${now}_topup`,
+          type: 'topup',
+          title: 'Пополнение Альфа-карты',
+          subtitle: `Оплата картой •• ${last4}`,
+          pointsSpent: 0,
+          pointsEarned: value,
+          paymentMethod: 'card',
+          cardLast4: last4,
+          date: now,
+        },
+        ...user.history,
+      ],
+    };
+    return persist(next);
+  };
+
   const canClaimDaily = user
     ? !isSameDay(user.lastBonusDate, Date.now())
     : false;
@@ -385,6 +423,7 @@ export const AuthProvider = ({ children }) => {
         claimDailyBonus,
         buySubscription,
         addForumPost,
+        topUp,
       }}
     >
       {children}

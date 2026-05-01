@@ -105,6 +105,13 @@ const HomeScreen = ({ navigation }) => {
               </View>
             )}
           </View>
+          <TouchableOpacity
+            style={styles.topUpInline}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('TopUp')}
+          >
+            <Text style={styles.topUpInlineText}>+ Пополнить карту</Text>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity
@@ -299,6 +306,19 @@ const styles = StyleSheet.create({
     color: colors.textOnPrimary,
     fontSize: 14,
     fontWeight: '700',
+  },
+  topUpInline: {
+    marginTop: 14,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  topUpInlineText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 14,
+    letterSpacing: 0.3,
   },
   dailyCard: {
     flexDirection: 'row',

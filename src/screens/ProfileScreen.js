@@ -177,6 +177,24 @@ const ProfileScreen = ({ navigation }) => {
             </View>
           </View>
           <AlfaCard user={user} />
+
+          <TouchableOpacity
+            style={styles.topUpButton}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('TopUp')}
+          >
+            <View style={styles.topUpIcon}>
+              <Text style={styles.topUpIconText}>+</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.topUpTitle}>Пополнить карту</Text>
+              <Text style={styles.topUpSubtitle}>
+                Оплата банковской картой · 1 ₽ = 1 балл
+              </Text>
+            </View>
+            <Text style={styles.topUpArrow}>›</Text>
+          </TouchableOpacity>
+
           <View style={styles.cardPerks}>
             <Text style={styles.cardPerksTitle}>
               Накопления и привилегии
@@ -606,6 +624,44 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.3,
+  },
+  topUpButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 12,
+  },
+  topUpIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  topUpIconText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '900',
+    lineHeight: 26,
+  },
+  topUpTitle: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  topUpSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  topUpArrow: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: '700',
   },
   cardPerks: {
     backgroundColor: colors.surface,

@@ -16,6 +16,10 @@ const HistoryItem = ({ item }) => {
   const isPurchase = item.type === 'purchase';
   const isWelcome = item.type === 'welcome';
   const isDaily = item.type === 'daily';
+  const isTopup = item.type === 'topup';
+  const isReferral = item.type === 'referral';
+  const isAchievement = item.type === 'achievement';
+  const isTrial = item.type === 'trial';
 
   return (
     <View style={styles.card}>
@@ -55,6 +59,11 @@ const HistoryItem = ({ item }) => {
             <Text style={styles.tagText}>Покупка тарифа</Text>
           </View>
         )}
+        {isTopup && (
+          <View style={[styles.tag, styles.tagTopup]}>
+            <Text style={styles.tagText}>Пополнение картой</Text>
+          </View>
+        )}
         {isWelcome && (
           <View style={[styles.tag, styles.tagBonus]}>
             <Text style={styles.tagText}>Регистрация</Text>
@@ -63,6 +72,21 @@ const HistoryItem = ({ item }) => {
         {isDaily && (
           <View style={[styles.tag, styles.tagBonus]}>
             <Text style={styles.tagText}>Ежедневный бонус</Text>
+          </View>
+        )}
+        {isReferral && (
+          <View style={[styles.tag, styles.tagBonus]}>
+            <Text style={styles.tagText}>Реферальная программа</Text>
+          </View>
+        )}
+        {isAchievement && (
+          <View style={[styles.tag, styles.tagBonus]}>
+            <Text style={styles.tagText}>Достижение</Text>
+          </View>
+        )}
+        {isTrial && (
+          <View style={[styles.tag, styles.tagPurchase]}>
+            <Text style={styles.tagText}>Пробный период</Text>
           </View>
         )}
       </View>
@@ -149,6 +173,9 @@ const styles = StyleSheet.create({
   },
   tagBonus: {
     backgroundColor: colors.successLight,
+  },
+  tagTopup: {
+    backgroundColor: '#FFF3E0',
   },
   tagText: {
     fontSize: 10,

@@ -19,6 +19,7 @@ import ForumScreen from '../screens/ForumScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import SupportChatScreen from '../screens/SupportChatScreen';
+import TopUpScreen from '../screens/TopUpScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -179,6 +180,11 @@ const AppNavigator = () => {
               name="SupportChat"
               component={SupportChatScreen}
               options={{ title: 'Чат с поддержкой' }}
+            />
+            <Stack.Screen
+              name="TopUp"
+              component={TopUpScreen}
+              options={{ title: 'Пополнение карты' }}
             />
           </>
         )}
