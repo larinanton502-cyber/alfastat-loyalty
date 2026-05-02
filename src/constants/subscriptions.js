@@ -77,7 +77,7 @@ export const SUBSCRIPTIONS = [
       '90 000 лимитов в месяц',
       'Доп. лимиты — 10 000 (440 ₽)',
       'Доп. пакет ключей: от 100 (1 ₽/ключ)',
-      'Закрытый Telegram-канал: новости, нововведения и анонсы первыми',
+      'Закрытый Telegram-канал: промокоды, новости и анонсы первыми',
     ],
     cashbackPercent: 12,
     isPremium: true,
@@ -99,7 +99,7 @@ export const SUBSCRIPTIONS = [
       '150 000 лимитов в месяц',
       'Доп. лимиты — 10 000 (440 ₽)',
       'Доп. пакет ключей: от 100 (1 ₽/ключ)',
-      'Закрытый Telegram-канал: новости, нововведения и анонсы первыми',
+      'Закрытый Telegram-канал: промокоды, новости и анонсы первыми',
     ],
     cashbackPercent: 15,
     isPremium: true,
@@ -121,7 +121,7 @@ export const SUBSCRIPTIONS = [
       'Неограниченно лимитов в месяц',
       'Индивидуальные условия',
       'Персональный менеджер',
-      'Закрытый Telegram-канал: новости, нововведения и анонсы первыми',
+      'Закрытый Telegram-канал: промокоды, новости и анонсы первыми',
     ],
     cashbackPercent: 0,
     isCustom: true,
@@ -199,6 +199,81 @@ export const ACHIEVEMENTS = [
 ];
 
 export const TELEGRAM_INVITE_URL = 'https://t.me/+alfastat_premium_demo';
+
+export const CARD_TIERS = [
+  {
+    id: 'bronze',
+    name: 'Bronze',
+    minSpent: 0,
+    cashbackBonus: 0,
+    dailyBonus: 100,
+    bg: '#0D47A1',
+    accent: '#CD7F32',
+    chipColor: '#CD7F32',
+    benefitText: 'Базовый уровень программы лояльности',
+  },
+  {
+    id: 'silver',
+    name: 'Silver',
+    minSpent: 5000,
+    cashbackBonus: 2,
+    dailyBonus: 150,
+    bg: '#37474F',
+    accent: '#C0C0C0',
+    chipColor: '#C0C0C0',
+    benefitText: '+2% к кэшбэку · ежедневный бонус +150',
+  },
+  {
+    id: 'gold',
+    name: 'Gold',
+    minSpent: 15000,
+    cashbackBonus: 5,
+    dailyBonus: 200,
+    bg: '#3E2723',
+    accent: '#FFD700',
+    chipColor: '#FFD700',
+    benefitText: '+5% к кэшбэку · ежедневный бонус +200',
+  },
+  {
+    id: 'platinum',
+    name: 'Platinum',
+    minSpent: 50000,
+    cashbackBonus: 8,
+    dailyBonus: 300,
+    bg: '#0F0F0F',
+    accent: '#E5E4E2',
+    chipColor: '#E5E4E2',
+    benefitText: '+8% к кэшбэку · ежедневный бонус +300',
+  },
+];
+
+export const getCardTier = (totalSpent) => {
+  const v = Number(totalSpent) || 0;
+  for (let i = CARD_TIERS.length - 1; i >= 0; i--) {
+    if (v >= CARD_TIERS[i].minSpent) return CARD_TIERS[i];
+  }
+  return CARD_TIERS[0];
+};
+
+export const getNextTier = (totalSpent) => {
+  const v = Number(totalSpent) || 0;
+  return CARD_TIERS.find((t) => t.minSpent > v) || null;
+};
+
+export const PROMO_TEMPLATES = [
+  {
+    subscriptionId: 'starter',
+    promoPrice: 1990,
+    label: 'Сезонная скидка',
+    durationHours: 48,
+  },
+  {
+    subscriptionId: 'advanced',
+    promoPrice: 6990,
+    label: 'Хит недели',
+    durationHours: 72,
+  },
+];
 
 export const getSubscriptionById = (id) =>
   SUBSCRIPTIONS.find((s) => s.id === id) || SUBSCRIPTIONS[0];

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
+import { CARD_TIERS, getCardTier } from '../constants/subscriptions';
 
 const formatCardNumber = (id) => {
   const padded = String(id || '0').padStart(16, '4');
@@ -11,8 +12,12 @@ const formatCardNumber = (id) => {
   )} ${last16.slice(12, 16)}`;
 };
 
-const formatExpiry = (registeredAt) => {
-  const start = registeredAt ? new Date(registeredAt) : new Date();
+const formatExpiry = (issuedAt, registeredAt) => {
+  const start = issuedAt
+    ? new Date(issuedAt)
+    : registeredAt
+    ? new Date(registeredAt)
+    : new Date();
   const expiry = new Date(start);
   expiry.setFullYear(expiry.getFullYear() + 5);
   const mm = (expiry.getMonth() + 1).toString().padStart(2, '0');
@@ -36,51 +41,90 @@ const transliterate = (name) => {
     .toUpperCase();
 };
 
-const AlfaCard = ({ user }) => {
+const AlfaCard = ({ user, totalSpent }) => {
   if (!user) return null;
+  const tier =
+    typeof totalSpent === 'number' ? getCardTier(totalSpent) : CARD_TIERS[0];
   const cardNumber = formatCardNumber(user.id);
-  const expiry = formatExpiry(user.registeredAt);
+  const expiry = formatExpiry(user.cardIssuedAt, user.registeredAt);
   const holder = transliterate(user.name).slice(0, 24);
 
+  const isLightBg = tier.id === 'platinum' || tier.id === 'gold';
+  const textPrimary = '#fff';
+  const textSecondary = isLightBg
+    ? 'rgba(255,255,255,0.75)'
+    : 'rgba(255,255,255,0.7)';
+
   return (
-    <View style={styles.card}>
-      <View style={styles.shineTopRight} />
-      <View style={styles.shineBottomLeft} />
+    <View style={[styles.card, { backgroundColor: tier.bg }]}>
+      <View
+        style={[
+          styles.shineTopRight,
+          { backgroundColor: tier.accent, opacity: 0.18 },
+        ]}
+      />
+      <View
+        style={[
+          styles.shineBottomLeft,
+          { backgroundColor: tier.accent, opacity: 0.1 },
+        ]}
+      />
 
       <View style={styles.header}>
         <View>
-          <Text style={styles.brand}>Альфа-карта</Text>
-          <Text style={styles.brandSubtitle}>AlfaStat Loyalty</Text>
+          <Text style={[styles.brand, { color: textPrimary }]}>Альфа-карта</Text>
+          <Text style={[styles.brandSubtitle, { color: textSecondary }]}>
+            AlfaStat Loyalty
+          </Text>
         </View>
-        <View style={styles.logoBox}>
-          <Text style={styles.logoText}>AS</Text>
+        <View style={styles.tierBadge}>
+          <Text style={[styles.tierBadgeText, { color: tier.accent }]}>
+            {tier.name.toUpperCase()}
+          </Text>
         </View>
       </View>
 
-      <View style={styles.chip}>
+      <View style={[styles.chip, { backgroundColor: tier.chipColor }]}>
         <View style={styles.chipInner} />
       </View>
 
       <View style={styles.balanceBlock}>
-        <Text style={styles.balanceLabel}>Баланс</Text>
+        <Text style={[styles.balanceLabel, { color: textSecondary }]}>
+          Баланс
+        </Text>
         <View style={styles.balanceRow}>
-          <Text style={styles.balanceValue}>
+          <Text style={[styles.balanceValue, { color: textPrimary }]}>
             {user.balance.toLocaleString('ru-RU')}
           </Text>
-          <Text style={styles.balanceUnit}>Альфа баллов</Text>
+          <Text style={[styles.balanceUnit, { color: textSecondary }]}>
+            Альфа баллов
+          </Text>
         </View>
       </View>
 
-      <Text style={styles.cardNumber}>{cardNumber}</Text>
+      <Text style={[styles.cardNumber, { color: textPrimary }]}>
+        {cardNumber}
+      </Text>
 
       <View style={styles.footer}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.footerLabel}>ДЕРЖАТЕЛЬ</Text>
-          <Text style={styles.footerValue}>{holder || 'CARD HOLDER'}</Text>
+          <Text style={[styles.footerLabel, { color: textSecondary }]}>
+            ДЕРЖАТЕЛЬ
+          </Text>
+          <Text style={[styles.footerValue, { color: textPrimary }]}>
+            {holder || 'CARD HOLDER'}
+          </Text>
         </View>
-        <View>
-          <Text style={styles.footerLabel}>ДЕЙСТВУЕТ ДО</Text>
-          <Text style={styles.footerValue}>{expiry}</Text>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={[styles.footerLabel, { color: textSecondary }]}>
+            ДЕЙСТВУЕТ ДО
+          </Text>
+          <Text style={[styles.footerValue, { color: textPrimary }]}>
+            {expiry}
+          </Text>
+        </View>
+        <View style={styles.logoBox}>
+          <Text style={styles.logoText}>AS</Text>
         </View>
       </View>
     </View>
@@ -89,11 +133,10 @@ const AlfaCard = ({ user }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.primaryDark,
     borderRadius: 22,
     padding: 22,
     overflow: 'hidden',
-    shadowColor: colors.primaryDark,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.35,
     shadowRadius: 20,
@@ -108,8 +151,6 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: colors.primaryLight,
-    opacity: 0.18,
   },
   shineBottomLeft: {
     position: 'absolute',
@@ -118,8 +159,6 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: colors.primary,
-    opacity: 0.25,
   },
   header: {
     flexDirection: 'row',
@@ -127,53 +166,48 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   brand: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '900',
     letterSpacing: 0.4,
   },
   brandSubtitle: {
-    color: 'rgba(255,255,255,0.6)',
     fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
-  logoBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  tierBadge: {
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
   },
-  logoText: {
-    color: '#fff',
-    fontSize: 16,
+  tierBadgeText: {
+    fontSize: 11,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   chip: {
     width: 36,
     height: 28,
     borderRadius: 6,
-    backgroundColor: '#E0C175',
     marginTop: 10,
     padding: 3,
   },
   chipInner: {
     flex: 1,
     borderRadius: 4,
-    backgroundColor: '#C9A856',
+    backgroundColor: 'rgba(0,0,0,0.18)',
     borderWidth: 1,
-    borderColor: '#A5862C',
+    borderColor: 'rgba(0,0,0,0.3)',
   },
   balanceBlock: {
     marginTop: 6,
   },
   balanceLabel: {
-    color: 'rgba(255,255,255,0.7)',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.5,
@@ -185,19 +219,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   balanceValue: {
-    color: '#fff',
     fontSize: 32,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   balanceUnit: {
-    color: 'rgba(255,255,255,0.85)',
     fontSize: 14,
     fontWeight: '700',
     marginLeft: 8,
   },
   cardNumber: {
-    color: '#fff',
     fontSize: 17,
     fontWeight: '700',
     letterSpacing: 2,
@@ -210,17 +241,30 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   footerLabel: {
-    color: 'rgba(255,255,255,0.6)',
     fontSize: 9,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   footerValue: {
-    color: '#fff',
     fontSize: 13,
     fontWeight: '700',
     marginTop: 2,
     letterSpacing: 0.5,
+  },
+  logoBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
+  },
+  logoText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
 });
 

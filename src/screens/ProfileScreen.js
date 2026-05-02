@@ -40,7 +40,17 @@ const InfoRow = ({ label, value }) => (
 );
 
 const ProfileScreen = ({ navigation }) => {
-  const { user, logout, updateProfile, changePassword, issueCard, isPremiumActive } = useAuth();
+  const {
+    user,
+    logout,
+    updateProfile,
+    changePassword,
+    issueCard,
+    isPremiumActive,
+    currentTier,
+    nextTier,
+    totalSpent,
+  } = useAuth();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '' });
   const [saving, setSaving] = useState(false);
@@ -58,7 +68,6 @@ const ProfileScreen = ({ navigation }) => {
 
   const purchases = user.history.filter((h) => h.type === 'purchase');
   const purchasesCount = purchases.length;
-  const totalSpent = purchases.reduce((sum, h) => sum + h.pointsSpent, 0);
   const referrals = user.referrals || [];
   const unlockedAchievements = ACHIEVEMENTS.filter(
     (a) => user.achievements && user.achievements[a.id]
@@ -195,7 +204,7 @@ const ProfileScreen = ({ navigation }) => {
                 <Text style={styles.activeBadgeText}>Активна</Text>
               </View>
             </View>
-            <AlfaCard user={user} />
+            <AlfaCard user={user} totalSpent={totalSpent} />
 
             <TouchableOpacity
               style={styles.topUpButton}
@@ -213,6 +222,74 @@ const ProfileScreen = ({ navigation }) => {
               </View>
               <Text style={styles.topUpArrow}>›</Text>
             </TouchableOpacity>
+
+            {currentTier && (
+              <View style={styles.tierCard}>
+                <View style={styles.tierHeader}>
+                  <View>
+                    <Text style={styles.tierLabel}>Уровень карты</Text>
+                    <Text
+                      style={[styles.tierName, { color: currentTier.accent }]}
+                    >
+                      {currentTier.name}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.tierGlyph,
+                      { backgroundColor: currentTier.bg },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.tierGlyphText,
+                        { color: currentTier.accent },
+                      ]}
+                    >
+                      {currentTier.name[0]}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.tierBenefit}>
+                  {currentTier.benefitText}
+                </Text>
+
+                {nextTier ? (
+                  <>
+                    <View style={styles.progressTrack}>
+                      <View
+                        style={[
+                          styles.progressFill,
+                          {
+                            width: `${Math.min(
+                              100,
+                              ((totalSpent - currentTier.minSpent) /
+                                (nextTier.minSpent - currentTier.minSpent)) *
+                                100
+                            )}%`,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.progressFooter}>
+                      <Text style={styles.progressText}>
+                        Потрачено: {totalSpent.toLocaleString('ru-RU')}
+                      </Text>
+                      <Text style={styles.progressText}>
+                        До {nextTier.name}:{' '}
+                        {(nextTier.minSpent - totalSpent).toLocaleString(
+                          'ru-RU'
+                        )}
+                      </Text>
+                    </View>
+                  </>
+                ) : (
+                  <Text style={styles.progressMaxed}>
+                    Высший уровень достигнут
+                  </Text>
+                )}
+              </View>
+            )}
           </View>
         ) : (
           <View style={styles.issueCardSection}>
@@ -423,8 +500,8 @@ const ProfileScreen = ({ navigation }) => {
             </Text>
             <Text style={styles.telegramSubtitle}>
               {isPremiumActive
-                ? 'Эксклюзивные советы и анонсы новых функций'
-                : 'Доступно для тарифов «Продвинутый» и «Корпоративный»'}
+                ? 'Промокоды, советы экспертов и анонсы новинок'
+                : 'Промокоды и анонсы — для тарифов «Продвинутый» и «Корпоративный»'}
             </Text>
           </View>
           <Text style={styles.telegramArrow}>›</Text>
@@ -833,6 +910,77 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 28,
     fontWeight: '700',
+  },
+  tierCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  tierHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  tierLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  tierName: {
+    fontSize: 24,
+    fontWeight: '900',
+    marginTop: 2,
+    letterSpacing: 1,
+  },
+  tierGlyph: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tierGlyphText: {
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  tierBenefit: {
+    fontSize: 13,
+    color: colors.text,
+    marginTop: 8,
+    marginBottom: 14,
+    lineHeight: 18,
+  },
+  progressTrack: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.border,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 4,
+  },
+  progressFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  progressText: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
+  progressMaxed: {
+    color: colors.success,
+    fontWeight: '800',
+    textAlign: 'center',
+    fontSize: 13,
   },
   cardPerks: {
     backgroundColor: colors.surface,

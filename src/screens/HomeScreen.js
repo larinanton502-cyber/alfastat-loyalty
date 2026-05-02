@@ -12,7 +12,6 @@ import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
 import {
   getSubscriptionById,
-  DAILY_BONUS,
   ACHIEVEMENTS,
 } from '../constants/subscriptions';
 import HistoryItem from '../components/HistoryItem';
@@ -26,9 +25,10 @@ const formatDate = (ts) => {
 };
 
 const HomeScreen = ({ navigation }) => {
-  const { user, canClaimDaily, claimDailyBonus, trialDaysLeft } = useAuth();
+  const { user, canClaimDaily, claimDailyBonus, trialDaysLeft, currentTier } = useAuth();
   const [claiming, setClaiming] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const dailyAmount = currentTier ? currentTier.dailyBonus : 100;
 
   if (!user) return null;
 
@@ -39,7 +39,7 @@ const HomeScreen = ({ navigation }) => {
     setClaiming(true);
     try {
       await claimDailyBonus();
-      notify({ title: 'Успех', message: `Начислено ${DAILY_BONUS} Альфа баллов!` });
+      notify({ title: 'Успех', message: `Начислено ${dailyAmount} Альфа баллов!` });
     } catch (e) {
       notify({ title: 'Не получилось', message: e.message });
     } finally {
@@ -142,13 +142,13 @@ const HomeScreen = ({ navigation }) => {
             </Text>
             <Text style={styles.dailySubtitle}>
               {canClaimDaily
-                ? `Получите +${DAILY_BONUS} Альфа баллов прямо сейчас`
+                ? `Получите +${dailyAmount} Альфа баллов прямо сейчас`
                 : 'Возвращайтесь завтра за новым бонусом'}
             </Text>
           </View>
           <View style={styles.dailyBadge}>
             <Text style={styles.dailyBadgeText}>
-              {canClaimDaily ? `+${DAILY_BONUS}` : '✓'}
+              {canClaimDaily ? `+${dailyAmount}` : '✓'}
             </Text>
           </View>
         </TouchableOpacity>

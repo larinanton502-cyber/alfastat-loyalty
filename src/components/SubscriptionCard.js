@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 
-const SubscriptionCard = ({ subscription, isActive, onPress }) => {
+const SubscriptionCard = ({ subscription, isActive, onPress, promo }) => {
   const { name, price, pointsPrice, features, popular, isCustom } = subscription;
+  const hasPromo = !!promo && !isCustom && pointsPrice > 0;
 
   return (
     <TouchableOpacity
@@ -13,6 +14,7 @@ const SubscriptionCard = ({ subscription, isActive, onPress }) => {
         styles.card,
         isActive && styles.cardActive,
         popular && !isActive && styles.cardPopular,
+        hasPromo && !isActive && styles.cardPromo,
       ]}
     >
       <View style={styles.headerRow}>
@@ -20,6 +22,10 @@ const SubscriptionCard = ({ subscription, isActive, onPress }) => {
         {isActive ? (
           <View style={styles.badgeActive}>
             <Text style={styles.badgeActiveText}>Активен</Text>
+          </View>
+        ) : hasPromo ? (
+          <View style={styles.badgePromo}>
+            <Text style={styles.badgePromoText}>{promo.label.toUpperCase()}</Text>
           </View>
         ) : popular ? (
           <View style={styles.badgePopular}>
@@ -31,6 +37,16 @@ const SubscriptionCard = ({ subscription, isActive, onPress }) => {
       <View style={styles.priceRow}>
         {isCustom ? (
           <Text style={styles.priceCustom}>По заявке</Text>
+        ) : hasPromo ? (
+          <>
+            <Text style={styles.priceOld}>
+              {pointsPrice.toLocaleString('ru-RU')}
+            </Text>
+            <Text style={[styles.price, styles.pricePromo]}>
+              {promo.promoPrice.toLocaleString('ru-RU')}
+            </Text>
+            <Text style={styles.points}>· Альфа баллов</Text>
+          </>
         ) : (
           <>
             <Text style={styles.price}>
@@ -78,6 +94,34 @@ const styles = StyleSheet.create({
   },
   cardPopular: {
     borderColor: colors.primaryLight,
+  },
+  cardPromo: {
+    borderColor: colors.warning,
+    borderWidth: 2,
+  },
+  badgePromo: {
+    backgroundColor: '#FFF3E0',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  badgePromoText: {
+    color: colors.warning,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.3,
+  },
+  priceOld: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textMuted,
+    textDecorationLine: 'line-through',
+    marginRight: 8,
+  },
+  pricePromo: {
+    color: colors.warning,
   },
   headerRow: {
     flexDirection: 'row',

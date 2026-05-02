@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
 } from '../constants/subscriptions';
 import PrimaryButton from '../components/PrimaryButton';
 import { confirm, notify } from '../utils/dialog';
+import { getActivePromotions, formatRemaining } from '../utils/promotions';
 
 const Row = ({ label, value, accent }) => (
   <View style={styles.row}>
@@ -28,21 +29,45 @@ const Row = ({ label, value, accent }) => (
 
 const SubscriptionDetailsScreen = ({ route, navigation }) => {
   const { subscriptionId } = route.params;
-  const { user, buySubscription } = useAuth();
+  const { user, buySubscription, currentTier } = useAuth();
   const [loading, setLoading] = useState(false);
   const [duration, setDuration] = useState(SUBSCRIPTION_DURATIONS[0]);
+  const [promo, setPromo] = useState(null);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const list = await getActivePromotions();
+      if (alive) {
+        setPromo(list.find((p) => p.subscriptionId === subscriptionId) || null);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [subscriptionId]);
+
+  useEffect(() => {
+    const t = setInterval(() => setTick((v) => v + 1), 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   const sub = getSubscriptionById(subscriptionId);
   const isActive = user?.currentSubscription === sub.id;
   const canBuy = !sub.isCustom && sub.pointsPrice > 0;
+  const hasPromo = !!promo && canBuy;
+  const basePrice = hasPromo ? promo.promoPrice : sub.pointsPrice;
 
   const { total, discounted, savings } =
     sub.pointsPrice && canBuy
-      ? calculateDurationPrice(sub.pointsPrice, duration.months, duration.discount)
+      ? calculateDurationPrice(basePrice, duration.months, duration.discount)
       : { total: 0, discounted: 0, savings: 0 };
 
+  const tierBonus = currentTier ? currentTier.cashbackBonus : 0;
+  const cashbackPercent = canBuy ? sub.cashbackPercent + tierBonus : 0;
   const cashback = canBuy
-    ? Math.round((discounted * sub.cashbackPercent) / 100)
+    ? Math.round((discounted * cashbackPercent) / 100)
     : 0;
 
   const handleBuy = () => {
@@ -57,7 +82,12 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
       onConfirm: async () => {
         setLoading(true);
         try {
-          await buySubscription(sub.id, duration.months, duration.discount);
+          await buySubscription(
+            sub.id,
+            duration.months,
+            duration.discount,
+            hasPromo ? promo.promoPrice : null
+          );
           notify({
             title: 'Покупка успешна',
             message: `Тариф «${sub.name}» активирован на ${duration.label}.\nНачислено ${cashback} Альфа баллов кэшбэка.`,
@@ -78,6 +108,16 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
         <Text style={styles.name}>{sub.name}</Text>
         {sub.isCustom ? (
           <Text style={styles.priceCustom}>По заявке</Text>
+        ) : hasPromo ? (
+          <View style={styles.priceRow}>
+            <Text style={styles.priceOld}>
+              {sub.pointsPrice.toLocaleString('ru-RU')}
+            </Text>
+            <Text style={[styles.price, { color: colors.warning }]}>
+              {promo.promoPrice.toLocaleString('ru-RU')}
+            </Text>
+            <Text style={styles.points}>Альфа баллов / мес.</Text>
+          </View>
         ) : (
           <View style={styles.priceRow}>
             <Text style={styles.price}>
@@ -90,6 +130,16 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
                 {sub.pointsPrice.toLocaleString('ru-RU')} Альфа баллов / мес.
               </Text>
             )}
+          </View>
+        )}
+
+        {hasPromo && (
+          <View style={styles.promoNote}>
+            <Text style={styles.promoNoteLabel}>{promo.label.toUpperCase()}</Text>
+            <Text style={styles.promoNoteText}>
+              Акция действует ещё {formatRemaining(promo.expiresAt)}. Цена
+              применяется к стоимости одного месяца.
+            </Text>
           </View>
         )}
 
@@ -176,7 +226,9 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
               value={`${user.balance.toLocaleString('ru-RU')} Альфа баллов`}
             />
             <Row
-              label={`${sub.pointsPrice.toLocaleString('ru-RU')} × ${duration.months} мес.`}
+              label={`${basePrice.toLocaleString('ru-RU')}${
+                hasPromo ? ' (акция)' : ''
+              } × ${duration.months} мес.`}
               value={`${total.toLocaleString('ru-RU')} Альфа баллов`}
             />
             {savings > 0 && (
@@ -191,7 +243,11 @@ const SubscriptionDetailsScreen = ({ route, navigation }) => {
               value={`${discounted.toLocaleString('ru-RU')} Альфа баллов`}
             />
             <Row
-              label={`Кэшбэк (${sub.cashbackPercent}%)`}
+              label={
+                tierBonus > 0
+                  ? `Кэшбэк ${cashbackPercent}% (база ${sub.cashbackPercent}% + ${currentTier.name} +${tierBonus}%)`
+                  : `Кэшбэк (${cashbackPercent}%)`
+              }
               value={`+${cashback.toLocaleString('ru-RU')} Альфа баллов`}
               accent
             />
@@ -276,6 +332,34 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '800',
     color: colors.primary,
+  },
+  priceOld: {
+    fontSize: 18,
+    color: colors.textMuted,
+    fontWeight: '700',
+    textDecorationLine: 'line-through',
+    marginRight: 10,
+  },
+  promoNote: {
+    backgroundColor: '#FFF3E0',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  promoNoteLabel: {
+    color: colors.warning,
+    fontWeight: '900',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    marginBottom: 3,
+  },
+  promoNoteText: {
+    color: colors.text,
+    fontSize: 12,
+    lineHeight: 17,
   },
   priceCustom: {
     fontSize: 20,

@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { storage } from '../storage/storage';
 import {
   WELCOME_BONUS,
-  DAILY_BONUS,
   TRIAL_DURATION_DAYS,
   TRIAL_SUBSCRIPTION_ID,
   REFERRAL_BONUS_REFERRER,
@@ -10,6 +9,8 @@ import {
   ACHIEVEMENTS,
   getSubscriptionById,
   calculateDurationPrice,
+  getCardTier,
+  getNextTier,
 } from '../constants/subscriptions';
 
 const AuthContext = createContext(null);
@@ -266,19 +267,24 @@ export const AuthProvider = ({ children }) => {
     if (isSameDay(user.lastBonusDate, Date.now())) {
       throw new Error('Ежедневный бонус уже получен сегодня');
     }
+    const totalSpentNow = (user.history || [])
+      .filter((h) => h.type === 'purchase')
+      .reduce((s, h) => s + (h.pointsSpent || 0), 0);
+    const tier = getCardTier(totalSpentNow);
+    const bonusAmount = tier.dailyBonus;
     const now = Date.now();
     let next = {
       ...user,
-      balance: user.balance + DAILY_BONUS,
+      balance: user.balance + bonusAmount,
       lastBonusDate: now,
       history: [
         {
           id: `${now}_daily`,
           type: 'daily',
           title: 'Ежедневный бонус',
-          subtitle: 'Спасибо, что заходите каждый день!',
+          subtitle: `Уровень ${tier.name} · спасибо, что заходите каждый день!`,
           pointsSpent: 0,
-          pointsEarned: DAILY_BONUS,
+          pointsEarned: bonusAmount,
           date: now,
         },
         ...user.history,
@@ -288,7 +294,12 @@ export const AuthProvider = ({ children }) => {
     return persist(next);
   };
 
-  const buySubscription = async (subscriptionId, months = 1, discountPercent = 0) => {
+  const buySubscription = async (
+    subscriptionId,
+    months = 1,
+    discountPercent = 0,
+    promoBasePrice = null
+  ) => {
     if (!user) return;
     if (!user.hasCard) {
       throw new Error('Сначала оформите Альфа-карту в профиле');
@@ -302,8 +313,11 @@ export const AuthProvider = ({ children }) => {
       throw new Error('Бесплатный план активируется автоматически');
     }
 
+    const basePrice =
+      promoBasePrice && promoBasePrice > 0 ? promoBasePrice : sub.pointsPrice;
+
     const { discounted, savings } = calculateDurationPrice(
-      sub.pointsPrice,
+      basePrice,
       months,
       discountPercent
     );
@@ -314,9 +328,16 @@ export const AuthProvider = ({ children }) => {
       );
     }
 
+    const totalSpentNow = (user.history || [])
+      .filter((h) => h.type === 'purchase')
+      .reduce((s, h) => s + (h.pointsSpent || 0), 0);
+    const tier = getCardTier(totalSpentNow);
+    const cashbackPercent = sub.cashbackPercent + tier.cashbackBonus;
+    const cashback = Math.round((discounted * cashbackPercent) / 100);
+
     const now = Date.now();
-    const cashback = Math.round((discounted * sub.cashbackPercent) / 100);
     const expiry = now + months * 30 * 24 * 60 * 60 * 1000;
+    const isPromo = promoBasePrice != null && promoBasePrice < sub.pointsPrice;
 
     let next = {
       ...user,
@@ -328,7 +349,9 @@ export const AuthProvider = ({ children }) => {
         {
           id: `${now}_purchase`,
           type: 'purchase',
-          title: `Подписка «${sub.name}» · ${months} мес.`,
+          title: `Подписка «${sub.name}» · ${months} мес.${
+            isPromo ? ' (акция)' : ''
+          }`,
           subtitle:
             savings > 0
               ? `Списано ${discounted} Альфа баллов (скидка ${savings}) · Кэшбэк ${cashback}`
@@ -340,7 +363,9 @@ export const AuthProvider = ({ children }) => {
           pointsEarned: cashback,
           discountPercent,
           savings,
-          cashbackPercent: sub.cashbackPercent,
+          cashbackPercent,
+          tierName: tier.name,
+          isPromo,
           date: now,
           expiresAt: expiry,
         },
@@ -443,6 +468,12 @@ export const AuthProvider = ({ children }) => {
     return ms > 0 ? Math.ceil(ms / (24 * 60 * 60 * 1000)) : 0;
   })();
 
+  const totalSpent = (user?.history || [])
+    .filter((h) => h.type === 'purchase')
+    .reduce((s, h) => s + (h.pointsSpent || 0), 0);
+  const currentTier = user ? getCardTier(totalSpent) : null;
+  const nextTier = user ? getNextTier(totalSpent) : null;
+
   return (
     <AuthContext.Provider
       value={{
@@ -461,6 +492,9 @@ export const AuthProvider = ({ children }) => {
         addForumPost,
         topUp,
         issueCard,
+        currentTier,
+        nextTier,
+        totalSpent,
       }}
     >
       {children}
