@@ -10,19 +10,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
-import {
-  getSubscriptionById,
-  ACHIEVEMENTS,
-} from '../constants/subscriptions';
+import { ACHIEVEMENTS } from '../constants/subscriptions';
 import HistoryItem from '../components/HistoryItem';
 import { notify } from '../utils/dialog';
-
-const formatDate = (ts) => {
-  const d = new Date(ts);
-  return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, '0')}.${d.getFullYear()}`;
-};
 
 const HomeScreen = ({ navigation }) => {
   const { user, canClaimDaily, claimDailyBonus, trialDaysLeft, currentTier } = useAuth();
@@ -32,7 +22,6 @@ const HomeScreen = ({ navigation }) => {
 
   if (!user) return null;
 
-  const subscription = getSubscriptionById(user.currentSubscription);
   const recent = user.history.slice(0, 3);
 
   const handleClaim = async () => {
@@ -87,45 +76,6 @@ const HomeScreen = ({ navigation }) => {
           </View>
         )}
 
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Баланс Альфа баллов</Text>
-          <Text style={styles.balanceValue}>
-            {user.balance.toLocaleString('ru-RU')}
-          </Text>
-          <View style={styles.balanceRow}>
-            <View style={styles.balanceCol}>
-              <Text style={styles.balanceColLabel}>Текущий тариф</Text>
-              <Text style={styles.balanceColValue}>{subscription.name}</Text>
-            </View>
-            {user.subscriptionExpiry && (
-              <View style={styles.balanceCol}>
-                <Text style={styles.balanceColLabel}>Действует до</Text>
-                <Text style={styles.balanceColValue}>
-                  {formatDate(user.subscriptionExpiry)}
-                </Text>
-              </View>
-            )}
-          </View>
-          {user.hasCard ? (
-            <TouchableOpacity
-              style={styles.topUpInline}
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('TopUp')}
-            >
-              <Text style={styles.topUpInlineText}>+ Пополнить карту</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.topUpInline}
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('Profile')}
-            >
-              <Text style={styles.topUpInlineText}>
-                Оформить Альфа-карту →
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
 
         <TouchableOpacity
           activeOpacity={0.85}
@@ -275,63 +225,6 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.9)',
     fontSize: 12,
     marginTop: 2,
-  },
-  balanceCard: {
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    padding: 22,
-    marginBottom: 16,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  balanceLabel: {
-    color: colors.accent,
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  balanceValue: {
-    color: colors.textOnPrimary,
-    fontSize: 44,
-    fontWeight: '900',
-    marginVertical: 6,
-  },
-  balanceRow: {
-    flexDirection: 'row',
-    marginTop: 10,
-    paddingTop: 14,
-    borderTopColor: 'rgba(255,255,255,0.2)',
-    borderTopWidth: 1,
-  },
-  balanceCol: {
-    flex: 1,
-  },
-  balanceColLabel: {
-    color: colors.accent,
-    fontSize: 11,
-    marginBottom: 3,
-  },
-  balanceColValue: {
-    color: colors.textOnPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  topUpInline: {
-    marginTop: 14,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  topUpInlineText: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 14,
-    letterSpacing: 0.3,
   },
   dailyCard: {
     flexDirection: 'row',
